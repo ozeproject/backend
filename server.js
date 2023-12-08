@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const port = 3001;
@@ -14,6 +15,7 @@ const connection = mysql.createConnection({
   user: 'root',
   password: 'mysql', 
   database: 'oze',
+  port: '3306',
 });
 
 connection.connect((err) => {
@@ -24,6 +26,7 @@ connection.connect((err) => {
   }
 });
 
+//Products
 // Get route
 app.get('/api/products', (req, res) => {
   const query = 'SELECT * FROM Product';
@@ -97,7 +100,7 @@ app.delete('/api/products/:id', (req, res) => {
   });
 });
 
-// Add this route to your server.js
+// Add this route to your server.js Count
 app.get('/api/products/count', (req, res) => {
   const query = 'SELECT COUNT(*) as count FROM Product';
 
@@ -111,6 +114,64 @@ app.get('/api/products/count', (req, res) => {
     }
   });
 });
+
+//User
+// Signup
+app.post('/api/signup', (req, res) => {
+  const { Username, Password, Email, Name, Address, Phone } = req.body;
+
+  const query = 'INSERT INTO User (Username, Password, Email, Name, Address, Phone) VALUES (?, ?, ?, ?, ?, ?)';
+  const values = [Username, Password, Email, Name, Address, Phone];
+
+  connection.query(query, values, (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      res.status(201).json({ message: 'User created successfully' });
+    }
+  });
+});
+
+// Login
+app.post('/api/login', (req, res) => {
+  const { Username, Password } = req.body;
+
+  const query = 'SELECT * FROM User WHERE Username=? AND Password=?';
+  const values = [Username, Password];
+
+  connection.query(query, values, (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      if (results.length > 0) {
+        // User authenticated, generate and return a token
+        const user = results[0];
+        const token = jwt.sign({ userId: user.UserId, username: user.Username }, 'your_secret_key', { expiresIn: '2h' });
+
+        res.status(200).json({ token });
+      } else {
+        res.status(401).json({ error: 'Invalid credentials' });
+      }
+    }
+  });
+});
+
+
+// Forgot Password
+app.post('/api/forgot-password', (req, res) => {
+  const { Email } = req.body;
+
+  // Implement logic to send reset password email or perform password reset
+  // (e.g., generate a reset token, store it in the database, and send an email)
+  
+  // Placeholder response
+  res.status(200).json({ message: 'Password reset initiated' });
+});
+
+
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
