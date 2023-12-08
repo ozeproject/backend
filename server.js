@@ -14,7 +14,7 @@ const connection = mysql.createConnection({
   host: '10.4.85.33',
   user: 'root',
   password: 'mysql', 
-  database: 'oze',
+  database: 'mydb',
   port: '3306',
 });
 
@@ -47,7 +47,7 @@ app.post('/api/products', (req, res) => {
   const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath } = req.body;
 
   // Perform SQL INSERT query to add a new product
-  const query = `INSERT INTO Product (ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, Category_category_id, ImagePath) 
+  const query = `INSERT INTO Product (ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath];
 
@@ -69,7 +69,7 @@ app.put('/api/products/:id', (req, res) => {
 
   // Perform SQL UPDATE query to modify the details of a product
   const query = `UPDATE Product 
-                 SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, Category_category_id=?, ImagePath=?
+                 SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, CategoryId=?, ImagePath=?
                  WHERE ProductId=?`;
   const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, productId];
 
@@ -120,7 +120,7 @@ app.get('/api/products/count', (req, res) => {
 app.post('/api/signup', (req, res) => {
   const { Username, Password, Email, Name, Address, Phone } = req.body;
 
-  const query = 'INSERT INTO User (Username, Password, Email, Name, Address, Phone) VALUES (?, ?, ?, ?, ?, ?)';
+  const query = 'INSERT INTO SYS_User (Username, Password, Email, Name, Address, Phone) VALUES (?, ?, ?, ?, ?, ?)';
   const values = [Username, Password, Email, Name, Address, Phone];
 
   connection.query(query, values, (err, results) => {
@@ -137,7 +137,7 @@ app.post('/api/signup', (req, res) => {
 app.post('/api/login', (req, res) => {
   const { Username, Password } = req.body;
 
-  const query = 'SELECT * FROM User WHERE Username=? AND Password=?';
+  const query = 'SELECT * FROM SYS_User WHERE Username=? AND Password=?';
   const values = [Username, Password];
 
   connection.query(query, values, (err, results) => {
