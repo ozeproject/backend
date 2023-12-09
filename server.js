@@ -14,7 +14,7 @@ const connection = mysql.createConnection({
   host: '10.4.85.33',
   user: 'root',
   password: 'mysql', 
-  database: 'mydb',
+  database: 'ozedb',
   port: '3306',
 });
 
@@ -27,7 +27,7 @@ connection.connect((err) => {
 });
 
 //Products
-// Get route
+// Get route all product
 app.get('/api/products', (req, res) => {
   const query = 'SELECT * FROM Product';
 
@@ -40,6 +40,27 @@ app.get('/api/products', (req, res) => {
     }
   });
 });
+// Get a single product 
+app.get('/api/products/:id', (req, res) => {
+  const productId = req.params.id;
+  const query = 'SELECT * FROM Product WHERE ProductId = ?';
+
+  connection.query(query, [productId], (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      if (results.length > 0) {
+        // Product found
+        res.status(200).json(results[0]);
+      } else {
+        // Product not found
+        res.status(404).json({ error: 'Product not found' });
+      }
+    }
+  });
+});
+
 
 // Create
 app.post('/api/products', (req, res) => {
