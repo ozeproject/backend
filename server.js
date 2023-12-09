@@ -60,7 +60,28 @@ app.get('/api/products/:id', (req, res) => {
     }
   });
 });
+// Count
+app.get('/api/productCount', (req, res) => {
+  const query = 'SELECT COUNT(*) as count FROM Product';
 
+  connection.query(query, (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      console.log('Query results:', results);  // Log the results to see what's returned
+
+      const count = results[0]?.count || 0;
+
+      // Check if count is undefined or null
+      if (count === null || count === undefined) {
+        res.status(404).json({ error: 'Count not found' });
+      } else {
+        res.status(200).json({ count });
+      }
+    }
+  });
+});
 
 // Create
 app.post('/api/products', (req, res) => {
@@ -121,20 +142,6 @@ app.delete('/api/products/:id', (req, res) => {
   });
 });
 
-// Add this route to your server.js Count
-app.get('/api/products/count', (req, res) => {
-  const query = 'SELECT COUNT(*) as count FROM Product';
-
-  connection.query(query, (err, results) => {
-    if (err) {
-      console.error('Error executing MySQL query: ', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      const count = results[0]?.count || 0;
-      res.status(200).json({ count });
-    }
-  });
-});
 
 //User
 // Signup
@@ -184,14 +191,67 @@ app.post('/api/login', (req, res) => {
 app.post('/api/forgot-password', (req, res) => {
   const { Email } = req.body;
 
-  // Implement logic to send reset password email or perform password reset
-  // (e.g., generate a reset token, store it in the database, and send an email)
-  
-  // Placeholder response
-  res.status(200).json({ message: 'Password reset initiated' });
+  // Generate a reset token
+  const resetToken = generateResetToken();
+
+  // Store the reset token in the database
+  const updateQuery = 'UPDATE SYS_User SET ResetToken = ? WHERE Email = ?';
+  connection.query(updateQuery, [resetToken, Email], (updateErr, updateResults) => {
+    if (updateErr) {
+      console.error('Error updating reset token: ', updateErr);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      console.log('Update Query:', updateQuery);
+      console.log('Update Parameters:', [resetToken, Email]);
+      console.log('Update Results:', updateResults)
+      // Placeholder response
+      res.status(200).json({ message: 'Password reset initiated', resetToken });
+    }
+  });
 });
 
+// Reset Password
+app.post('/api/forgot-password/:userId', (req, res) => {
+  const { userId } = req.params;
+  const { newPassword, resetToken } = req.body;
 
+  // Check if the reset token matches the one stored in the database
+  const checkTokenQuery = 'SELECT * FROM SYS_User WHERE UserId = ? AND ResetToken = ?';
+  connection.query(checkTokenQuery, [userId, resetToken], (tokenErr, tokenResults) => {
+    if (tokenErr) {
+      console.error('Error checking reset token: ', tokenErr);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else if (tokenResults.length === 0) {
+      res.status(401).json({ error: 'Invalid reset token' });
+    } else {
+      // Reset the user's password
+      const updatePasswordQuery = 'UPDATE SYS_User SET Password = ? WHERE UserId = ?';
+      connection.query(updatePasswordQuery, [newPassword, userId], (updateErr, updateResults) => {
+        if (updateErr) {
+          console.error('Error updating password: ', updateErr);
+          res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+          // Clear the reset token from the database after successful password reset
+          const clearTokenQuery = 'UPDATE SYS_User SET ResetToken = NULL WHERE UserId = ?';
+          connection.query(clearTokenQuery, [userId], (clearTokenErr, clearTokenResults) => {
+            if (clearTokenErr) {
+              console.error('Error clearing reset token: ', clearTokenErr);
+            }
+            // Placeholder response
+            res.status(200).json({ message: 'Password reset successfully' });
+          });
+        }
+      });
+    }
+  });
+});
+
+// Helper function to generate a random reset token
+function generateResetToken() {
+  // Implement your logic to generate a secure random token (e.g., using 'crypto' library)
+  // For simplicity, using a basic example here
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
 
 
 app.listen(port, () => {
