@@ -40,6 +40,7 @@ app.get('/api/products', (req, res) => {
     }
   });
 });
+
 // Get a single product 
 app.get('/api/products/:id', (req, res) => {
   const productId = req.params.id;
@@ -60,6 +61,7 @@ app.get('/api/products/:id', (req, res) => {
     }
   });
 });
+
 // Count
 app.get('/api/productCount', (req, res) => {
   const query = 'SELECT COUNT(*) as count FROM Product';
