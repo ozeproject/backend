@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const port = 3001;
+//const port = 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -294,7 +294,7 @@ function generateResetToken() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-
+const port = 3301;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
