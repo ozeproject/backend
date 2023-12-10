@@ -11,7 +11,8 @@ app.use(express.json());
 
 
 const connection = mysql.createConnection({
-  host: '10.4.85.33',
+  //host: '10.4.85.33',
+  host: 'ozedb',
   user: 'root',
   password: 'mysql', 
   database: 'ozedb',
@@ -294,7 +295,7 @@ function generateResetToken() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-const port = 3301;
+const port = 8080;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
