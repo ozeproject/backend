@@ -167,22 +167,61 @@ app.post('/api/signup', (req, res) => {
 app.post('/api/login', (req, res) => {
   const { Username, Password } = req.body;
 
-  const query = 'SELECT * FROM SYS_User WHERE Username=? AND Password=?';
-  const values = [Username, Password];
+  // Step 1: Check if the username exists in the database
+  const checkUsernameQuery = 'SELECT * FROM SYS_User WHERE Username=?';
+  const checkUsernameValues = [Username];
+
+  connection.query(checkUsernameQuery, checkUsernameValues, (err, usernameResults) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      if (usernameResults.length > 0) {
+        // Step 2: Check if the password is correct
+        const user = usernameResults[0];
+        const checkPasswordQuery = 'SELECT * FROM SYS_User WHERE UserId=? AND Password=?';
+        const checkPasswordValues = [user.UserId, Password];
+
+        connection.query(checkPasswordQuery, checkPasswordValues, (passwordErr, passwordResults) => {
+          if (passwordErr) {
+            console.error('Error executing MySQL query: ', passwordErr);
+            res.status(500).json({ error: 'Internal Server Error' });
+          } else {
+            if (passwordResults.length > 0) {
+              // User authenticated, generate and return a token
+              const token = jwt.sign({ userId: user.UserId, username: user.Username }, 'your_secret_key', { expiresIn: '2h' });
+              res.status(200).json({ token });
+            } else {
+              // Password is incorrect
+              res.status(401).json({ error: 'Invalid password' });
+            }
+          }
+        });
+      } else {
+        // Username does not exist
+        res.status(401).json({ error: 'Invalid credentials' });
+      }
+    }
+  });
+});
+
+// Update user by UserId
+app.put('/api/users/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const { Username, Password, Email, Name, Address, Phone } = req.body;
+
+  const query = 'UPDATE SYS_User SET Username=?, Password=?, Email=?, Name=?, Address=?, Phone=? WHERE UserId=?';
+  const values = [Username, Password, Email, Name, Address, Phone, userId];
 
   connection.query(query, values, (err, results) => {
     if (err) {
       console.error('Error executing MySQL query: ', err);
       res.status(500).json({ error: 'Internal Server Error' });
     } else {
-      if (results.length > 0) {
-        // User authenticated, generate and return a token
-        const user = results[0];
-        const token = jwt.sign({ userId: user.UserId, username: user.Username }, 'your_secret_key', { expiresIn: '2h' });
-
-        res.status(200).json({ token });
+      if (results.affectedRows > 0) {
+        res.status(200).json({ message: 'User updated successfully' });
       } else {
-        res.status(401).json({ error: 'Invalid credentials' });
+        res.status(404).json({ error: 'User not found' });
       }
     }
   });
