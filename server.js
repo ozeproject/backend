@@ -11,7 +11,7 @@ app.use(express.json());
 
 
 const connection = mysql.createConnection({
-  host: process.env.DB_HOST || '172.18.0.3',
+  host: process.env.DB_HOST || '172.18.0.1',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'mysql',
   database: process.env.DB_NAME || 'ozedb',
