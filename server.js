@@ -61,31 +61,37 @@ app.get('/api/products/:id', (req, res) => {
   });
 });
 
-// Get products for MALE collection
+// Get MALE collection
 app.get('/api/products/male', (req, res) => {
   const query = 'SELECT * FROM Product WHERE gender = ?';
 
   connection.query(query, ['male'], (err, results) => {
     if (err) {
       console.error('Error executing MySQL query: ', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      res.status(200).json(results);
+      return res.status(500).json({ error: 'Internal Server Error' });
     }
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'No products found for male gender' });
+    }
+    res.status(200).json(results);
   });
 });
 
-// Get products for FEMALE collection
+// Get FEMALE collection
 app.get('/api/products/female', (req, res) => {
   const query = 'SELECT * FROM Product WHERE gender = ?';
 
   connection.query(query, ['female'], (err, results) => {
     if (err) {
       console.error('Error executing MySQL query: ', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      res.status(200).json(results);
+      return res.status(500).json({ error: 'Internal Server Error' });
     }
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'No products found for male gender' });
+    }
+    res.status(200).json(results);
   });
 });
 
