@@ -53,10 +53,8 @@ app.get('/api/products/:id', (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     } else {
       if (results.length > 0) {
-        // Product found
         res.status(200).json(results[0]);
       } else {
-        // Product not found
         res.status(404).json({ error: 'Product not found' });
       }
     }
@@ -100,11 +98,9 @@ app.get('/api/productCount', (req, res) => {
       console.error('Error executing MySQL query: ', err);
       res.status(500).json({ error: 'Internal Server Error' });
     } else {
-      console.log('Query results:', results);  // Log the results to see what's returned
+      console.log('Query results:', results); 
 
       const count = results[0]?.count || 0;
-
-      // Check if count is undefined or null
       if (count === null || count === undefined) {
         res.status(404).json({ error: 'Count not found' });
       } else {
@@ -116,10 +112,7 @@ app.get('/api/productCount', (req, res) => {
 
 // Create
 app.post('/api/products', (req, res) => {
-  // Extract product data from the request body
   const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath } = req.body;
-
-  // Perform SQL INSERT query to add a new product
   const query = `INSERT INTO Product (ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath];
@@ -137,10 +130,7 @@ app.post('/api/products', (req, res) => {
 // Update
 app.put('/api/products/:id', (req, res) => {
   const productId = req.params.id;
-  // Extract updated product data from the request body
   const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath } = req.body;
-
-  // Perform SQL UPDATE query to modify the details of a product
   const query = `UPDATE Product 
                  SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, CategoryId=?, ImagePath=?
                  WHERE ProductId=?`;
@@ -160,7 +150,6 @@ app.put('/api/products/:id', (req, res) => {
 app.delete('/api/products/:id', (req, res) => {
   const productId = req.params.id;
 
-  // Perform SQL DELETE query to remove a product
   const query = 'DELETE FROM Product WHERE ProductId=?';
 
   connection.query(query, [productId], (err, results) => {
@@ -208,7 +197,6 @@ app.post('/api/signup', (req, res) => {
       const isValidEmail = emailRegex.test(Email);
 
       if (!isValidEmail) {
-        // Invalid email format
         res.status(400).json({ error: 'Invalid email format' });
         return;
       }
@@ -307,7 +295,6 @@ app.post('/api/forgot-password', (req, res) => {
       console.log('Update Query:', updateQuery);
       console.log('Update Parameters:', [resetToken, Email]);
       console.log('Update Results:', updateResults)
-      // Placeholder response
       res.status(200).json({ message: 'Password reset initiated', resetToken });
     }
   });
@@ -384,9 +371,7 @@ app.put('/api/user/profile', jwtMiddleware, (req, res) => {
 });
 
 app.get('/api/order/history', jwtMiddleware, (req, res) => {
-  const userId = req.user.userId; // Extract user ID from the JWT payload
-
-  // SQL query to fetch order history data for the logged-in user
+  const userId = req.user.userId; 
   const getOrderHistoryQuery = `
       SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
              Products.ProductId, Products.ProductName, Products.Description, Products.Price
@@ -395,13 +380,11 @@ app.get('/api/order/history', jwtMiddleware, (req, res) => {
       INNER JOIN Products ON OrderItems.Product_ProductId = Products.ProductId
       WHERE Orders.SYS_User_UserID = ?`;
 
-  // Execute the SQL query
   connection.query(getOrderHistoryQuery, [userId], (error, results) => {
       if (error) {
           console.error('Error fetching order history:', error);
           return res.status(500).json({ error: 'Internal Server Error' });
       }
-      // Send the fetched order history data as a response
       res.status(200).json(results);
   });
 });
