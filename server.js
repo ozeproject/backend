@@ -249,7 +249,7 @@ app.post('/api/login', (req, res) => {
             res.status(500).json({ error: 'Internal Server Error' });
           } else {
             if (passwordResults.length > 0) {
-              const token = jwt.sign({ userId: user.UserId, username: user.Username }, 'your_secret_key', { expiresIn: '2h' });
+              const token = jwt.sign({ userId: user.UserId, username: user.Username, role: user.Role }, 'your_secret_key', { expiresIn: '2h' });
               res.status(200).json({ token });
             } else {
               res.status(401).json({ error: 'Invalid password' });
@@ -376,36 +376,80 @@ app.put('/api/user/profile', jwtMiddleware, (req, res) => {
   });
 });
 
+//UserProfile History
 app.get('/api/order/history', jwtMiddleware, (req, res) => {
   const userId = req.user.userId; 
   const getOrderHistoryQuery = `
       SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
-             Products.ProductId, Products.ProductName, Products.Description, Products.Price
+             Products.ProductId, Products.ProductName, Products.Description, Products.Price,
+             OrderItems.Color, OrderItems.Size, OrderItems.Quantity
       FROM Orders
       INNER JOIN OrderItems ON Orders.OrderID = OrderItems.Order_OrderID
       INNER JOIN Products ON OrderItems.Product_ProductId = Products.ProductId
       WHERE Orders.SYS_User_UserID = ?`;
 
-  connection.query(getOrderHistoryQuery, [userId], (error, results) => {
-      if (error) {
-          console.error('Error fetching order history:', error);
-          return res.status(500).json({ error: 'Internal Server Error' });
-      }
-      res.status(200).json(results);
+  connection.query(getOrderHistoryQuery, [userId], (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'No products found for male gender' });
+    }
+    res.status(200).json(results);
   });
 });
 
-//Wishlist
+
+//Add Product to Wishlist 
+app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
+  const userId = req.user.id;
+  const productId = req.body.productId; // Assuming productId is sent in the request body
+
+  const query = 'INSERT INTO Wishlist (SYS_User_UserID, Product_productId) VALUES (?, ?)';
+  connection.query(query, [userId, productId], (err, results) => {
+      if (err) {
+          console.error('Error adding product to wishlist:', err);
+          res.status(500).json({ error: 'Internal Server Error' });
+      } else {
+          res.status(200).json({ message: 'Product added to wishlist successfully' });
+      }
+  });
+});
+
+// Retrieve Wishlist 
 app.get('/api/wishlist', jwtMiddleware, (req, res) => {
-  const userId = req.user.id; 
-  const query = 'SELECT * FROM Wishlist WHERE SYS_User_UserID = ?';
+  const userId = req.user.id;
+  const query = `
+      SELECT p.ProductId, p.ProductName, p.Description, p.Price, p.StockQuantity, p.Color, p.IsTrend, p.IsNew, p.CategoryId, p.ImagePath, p.gender
+      FROM Wishlist w
+      INNER JOIN Product p ON w.Product_productId = p.ProductId
+      WHERE w.SYS_User_UserID = ?
+  `;
   connection.query(query, [userId], (err, results) => {
-    if (err) {
-      console.error('Error executing MySQL query:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      res.status(200).json(results);
-    }
+      if (err) {
+          console.error('Error retrieving wishlist items:', err);
+          res.status(500).json({ error: 'Internal Server Error' });
+      } else {
+          res.status(200).json(results);
+      }
+  });
+});
+
+// Add Product to Cart Endpoint
+app.post('/api/cart/add', jwtMiddleware, (req, res) => {
+  const userId = req.user.id;
+  const productId = req.body.productId; // Assuming productId is sent in the request body
+
+  const query = 'INSERT INTO Cart (SYS_User_UserID, Product_productId) VALUES (?, ?)';
+  connection.query(query, [userId, productId], (err, results) => {
+      if (err) {
+          console.error('Error adding product to cart:', err);
+          res.status(500).json({ error: 'Internal Server Error' });
+      } else {
+          res.status(200).json({ message: 'Product added to cart successfully' });
+      }
   });
 });
 
