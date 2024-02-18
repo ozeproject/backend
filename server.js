@@ -62,7 +62,7 @@ app.get('/api/products/:id', (req, res) => {
 });
 
 // Get MALE collection
-app.get('/api/products/male', (req, res) => {
+app.get('/api/male', (req, res) => {
   const query = 'SELECT * FROM Product WHERE gender = ?';
 
   connection.query(query, ['Male'], (err, results) => {
@@ -79,7 +79,7 @@ app.get('/api/products/male', (req, res) => {
 });
 
 // Get FEMALE collection
-app.get('/api/products/female', (req, res) => {
+app.get('/api/female', (req, res) => {
   const query = 'SELECT * FROM Product WHERE gender = ?';
 
   connection.query(query, ['Female'], (err, results) => {
@@ -96,7 +96,7 @@ app.get('/api/products/female', (req, res) => {
 });
 
 // Get ACCESSORIES collection
-app.get('/api/products/accessories', (req, res) => {
+app.get('/api/accessories', (req, res) => {
   const query = 'SELECT * FROM Product WHERE categoryId = ?';
 
   connection.query(query, [2], (err, results) => {
