@@ -10,7 +10,7 @@ function authenticateToken(req, res, next) {
     }
 
     // Verify the token
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    jwt.verify(token, 'sj3', (err, user) => {
         if (err) {
             return res.status(403).json({ error: 'Forbidden: Invalid token' });
         }

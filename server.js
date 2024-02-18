@@ -266,7 +266,7 @@ app.post('/api/login', (req, res) => {
             res.status(500).json({ error: 'Internal Server Error' });
           } else {
             if (passwordResults.length > 0) {
-              const token = jwt.sign({ userId: user.UserId, username: user.Username, role: user.Role }, 'your_secret_key', { expiresIn: '2h' });
+              const token = jwt.sign({ userId: user.UserId, username: user.Username, role: user.Role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '2h' });
               res.status(200).json({ token });
             } else {
               res.status(401).json({ error: 'Invalid password' });
