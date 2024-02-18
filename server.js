@@ -61,6 +61,56 @@ app.get('/api/products/:id', (req, res) => {
   });
 });
 
+// Get MALE collection
+app.get('/api/pd/male', (req, res) => {
+  const query = 'SELECT * FROM Product WHERE gender = ?';
+
+  connection.query(query, ['Male'], (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'No products found for male gender' });
+    }
+    res.status(200).json(results);
+  });
+});
+
+// Get FEMALE collection
+app.get('/api/pd/female', (req, res) => {
+  const query = 'SELECT * FROM Product WHERE gender = ?';
+
+  connection.query(query, ['Female'], (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'No products found for male gender' });
+    }
+    res.status(200).json(results);
+  });
+});
+
+// Get ACCESSORIES collection
+app.get('/api/pd/accessories', (req, res) => {
+  const query = 'SELECT * FROM Product WHERE categoryId = ?';
+
+  connection.query(query, [2], (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'No products found for the Accessories category' });
+    }
+    res.status(200).json(results);
+  });
+});
 
 // Count
 app.get('/api/productCount', (req, res) => {
