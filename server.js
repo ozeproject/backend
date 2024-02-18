@@ -437,7 +437,7 @@ app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
 
 // Retrieve Wishlist 
 app.get('/api/wishlist', jwtMiddleware, (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.query.userId; 
   const query = `
       SELECT w.wishlist_id,p.ProductId, p.ProductName, p.Description, p.Price, p.StockQuantity, p.Color, p.IsTrend, p.IsNew, p.CategoryId, p.ImagePath, p.gender
       FROM Wishlist w
@@ -451,7 +451,7 @@ app.get('/api/wishlist', jwtMiddleware, (req, res) => {
     }
 
     if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'No products found Cart' });
+      return res.status(404).json({ error: 'No products found in the Wishlist' });
     }
     res.status(200).json(results);
   });
