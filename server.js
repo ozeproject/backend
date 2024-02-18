@@ -65,7 +65,7 @@ app.get('/api/products/:id', (req, res) => {
 app.get('/api/products/male', (req, res) => {
   const query = 'SELECT * FROM Product WHERE gender = ?';
 
-  connection.query(query, ['male'], (err, results) => {
+  connection.query(query, ['Male'], (err, results) => {
     if (err) {
       console.error('Error executing MySQL query: ', err);
       return res.status(500).json({ error: 'Internal Server Error' });
@@ -82,7 +82,7 @@ app.get('/api/products/male', (req, res) => {
 app.get('/api/products/female', (req, res) => {
   const query = 'SELECT * FROM Product WHERE gender = ?';
 
-  connection.query(query, ['female'], (err, results) => {
+  connection.query(query, ['Female'], (err, results) => {
     if (err) {
       console.error('Error executing MySQL query: ', err);
       return res.status(500).json({ error: 'Internal Server Error' });
@@ -90,6 +90,23 @@ app.get('/api/products/female', (req, res) => {
 
     if (!results || results.length === 0) {
       return res.status(404).json({ error: 'No products found for male gender' });
+    }
+    res.status(200).json(results);
+  });
+});
+
+// Get ACCESSORIES collection
+app.get('/api/products/accessories', (req, res) => {
+  const query = 'SELECT * FROM Product WHERE categoryId = ?';
+
+  connection.query(query, [2], (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'No products found for the Accessories category' });
     }
     res.status(200).json(results);
   });
@@ -395,7 +412,7 @@ app.get('/api/order/history', jwtMiddleware, (req, res) => {
     }
   
     if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'No products found for male gender' });
+      return res.status(404).json({ error: 'No products found History' });
     }
     res.status(200).json(results);
   });
@@ -422,18 +439,21 @@ app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
 app.get('/api/wishlist', jwtMiddleware, (req, res) => {
   const userId = req.user.id;
   const query = `
-      SELECT p.ProductId, p.ProductName, p.Description, p.Price, p.StockQuantity, p.Color, p.IsTrend, p.IsNew, p.CategoryId, p.ImagePath, p.gender
+      SELECT w.wishlist_id,p.ProductId, p.ProductName, p.Description, p.Price, p.StockQuantity, p.Color, p.IsTrend, p.IsNew, p.CategoryId, p.ImagePath, p.gender
       FROM Wishlist w
       INNER JOIN Product p ON w.Product_productId = p.ProductId
       WHERE w.SYS_User_UserID = ?
   `;
   connection.query(query, [userId], (err, results) => {
-      if (err) {
-          console.error('Error retrieving wishlist items:', err);
-          res.status(500).json({ error: 'Internal Server Error' });
-      } else {
-          res.status(200).json(results);
-      }
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'No products found Cart' });
+    }
+    res.status(200).json(results);
   });
 });
 
@@ -453,18 +473,42 @@ app.post('/api/cart/add', jwtMiddleware, (req, res) => {
   });
 });
 
-//Cart
+// Cart
 app.get('/api/cart', jwtMiddleware, (req, res) => {
-  const userId = req.user.id; 
-  const query = 'SELECT * FROM Cart WHERE SYS_User_UserID = ?';
+  const userId = req.user.id;
+  const query = `
+    SELECT 
+      c.cart_id,
+      c.quantity,
+      c.SYS_User_UserID,
+      c.Product_ProductId,
+      p.ProductId,
+      p.ProductName,
+      p.Description,
+      p.Price,
+      p.StockQuantity,
+      p.Color,
+      p.IsTrend,
+      p.IsNew,
+      p.CategoryId,
+      p.ImagePath,
+      p.gender
+    FROM Cart c
+    INNER JOIN Product p ON c.Product_ProductId = p.ProductId
+    WHERE c.SYS_User_UserID = ?`;
+  
   connection.query(query, [userId], (err, results) => {
     if (err) {
-      console.error('Error executing MySQL query:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      res.status(200).json(results);
+      console.error('Error executing MySQL query: ', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
     }
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'No products found Cart' });
+    }
+    res.status(200).json(results);
   });
+
 });
 
 const port = 8080;
