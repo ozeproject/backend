@@ -475,7 +475,7 @@ app.post('/api/cart/add', jwtMiddleware, (req, res) => {
 
 // Cart
 app.get('/api/cart', jwtMiddleware, (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.query.userId;
   const query = `
     SELECT 
       c.cart_id,
