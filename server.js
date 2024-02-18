@@ -399,7 +399,7 @@ app.get('/api/order/history', jwtMiddleware, (req, res) => {
   const getOrderHistoryQuery = `
       SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
              Product.ProductId, Product.ProductName, Product.Description, Product.Price,
-             OrderItems.Color, OrderItems.Size, OrderItems.Quantity
+             OrderItems.Quantity
       FROM Orders
       INNER JOIN OrderItems ON Orders.OrderID = OrderItems.Order_OrderID
       INNER JOIN Product ON OrderItems.Product_ProductId = Product.ProductId
