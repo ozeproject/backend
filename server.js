@@ -489,8 +489,8 @@ app.post('/api/cart/add', jwtMiddleware, (req, res) => {
   });
 });
 
-// Delete wishlist
-app.delete('/api/wishlist/:id', (req, res) => {
+// Delete cart
+app.delete('/api/cart/:id', (req, res) => {
   const cartId = req.params.id;
 
   const query = 'DELETE FROM Cart WHERE cart_id=?';
