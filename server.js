@@ -398,7 +398,7 @@ app.get('/api/order/history', jwtMiddleware, (req, res) => {
   const userId = req.query.userId; 
   const getOrderHistoryQuery = `
       SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
-             Product.ProductId, Product.ProductName, Product.Description, Product.Price,
+             Product.ProductId, Product.ProductName, Product.Description, Product.Price,Product.Color,
              OrderItems.Quantity
       FROM Orders
       INNER JOIN OrderItems ON Orders.OrderID = OrderItems.Order_OrderID
@@ -432,6 +432,22 @@ app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
       } else {
           res.status(200).json({ message: 'Product added to wishlist successfully' });
       }
+  });
+});
+
+// Delete wishlist
+app.delete('/api/wishlist/:id', (req, res) => {
+  const wishlistId = req.params.id;
+
+  const query = 'DELETE FROM Wishlist WHERE wishlist_id=?';
+
+  connection.query(query, [wishlistId], (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      res.status(200).json({ message: 'Wishlist deleted successfully' });
+    }
   });
 });
 
@@ -470,6 +486,22 @@ app.post('/api/cart/add', jwtMiddleware, (req, res) => {
       } else {
           res.status(200).json({ message: 'Product added to cart successfully' });
       }
+  });
+});
+
+// Delete wishlist
+app.delete('/api/wishlist/:id', (req, res) => {
+  const cartId = req.params.id;
+
+  const query = 'DELETE FROM Cart WHERE cart_id=?';
+
+  connection.query(query, [cartId], (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      res.status(200).json({ message: 'Cart deleted successfully' });
+    }
   });
 });
 
