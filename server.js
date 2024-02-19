@@ -435,21 +435,37 @@ app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
   });
 });
 
-// Delete wishlist
-app.delete('/api/wishlist/:id', (req, res) => {
-  const wishlistId = req.params.id;
+// // Delete wishlist
+// app.delete('/api/wishlist/:id', (req, res) => {
+//   const wishlistId = req.params.id;
 
-  const query = 'DELETE FROM Wishlist WHERE wishlist_id=?';
+//   const query = 'DELETE FROM Wishlist WHERE wishlist_id=?';
 
-  connection.query(query, [wishlistId], (err, results) => {
-    if (err) {
-      console.error('Error executing MySQL query: ', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      res.status(200).json({ message: 'Wishlist deleted successfully' });
-    }
-  });
-});
+//   connection.query(query, [wishlistId], (err, results) => {
+//     if (err) {
+//       console.error('Error executing MySQL query: ', err);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//     } else {
+//       res.status(200).json({ message: 'Wishlist deleted successfully' });
+//     }
+//   });
+// });
+
+// // Delete cart
+// app.delete('/api/cart/:id', (req, res) => {
+//   const cartId = req.params.id;
+
+//   const query = 'DELETE FROM Cart WHERE cart_id=?';
+
+//   connection.query(query, [cartId], (err, results) => {
+//     if (err) {
+//       console.error('Error executing MySQL query: ', err);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//     } else {
+//       res.status(200).json({ message: 'Cart deleted successfully' });
+//     }
+//   });
+// });
 
 // Retrieve Wishlist 
 app.get('/api/wishlist', jwtMiddleware, (req, res) => {
@@ -486,22 +502,6 @@ app.post('/api/cart/add', jwtMiddleware, (req, res) => {
       } else {
           res.status(200).json({ message: 'Product added to cart successfully' });
       }
-  });
-});
-
-// Delete cart
-app.delete('/api/cart/:id', (req, res) => {
-  const cartId = req.params.id;
-
-  const query = 'DELETE FROM Cart WHERE cart_id=?';
-
-  connection.query(query, [cartId], (err, results) => {
-    if (err) {
-      console.error('Error executing MySQL query: ', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      res.status(200).json({ message: 'Cart deleted successfully' });
-    }
   });
 });
 
