@@ -29,9 +29,21 @@ connection.connect((err) => {
 
 //Products
 // Get route all product
-app.get('/api/products', (req, res) => {
-  const query = 'SELECT * FROM Product';
+app.get('/api/products', async(req, res) => {
+  // add filter
+  const { sortBy } = req.query;
 
+  let query = 'SELECT * FROM Product';
+
+  if (sortBy === 'price_low_high') {
+    query += ' ORDER BY Price ASC';
+  } else if (sortBy === 'price_high_low') {
+    query += ' ORDER BY Price DESC';
+  } else if (sortBy === 'a-z') {
+    query += ' ORDER BY ProductName ASC';
+  } else if (sortBy === 'z-a') {
+    query += ' ORDER BY ProductName DESC';
+  }
   connection.query(query, (err, results) => {
     if (err) {
       console.error('Error executing MySQL query: ', err);
