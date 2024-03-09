@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const jwtMiddleware = require('./jwtMiddleware'); // Import the JWT middleware
 
 const app = express();
-//const port = 3001;
+// const port = 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -392,6 +392,7 @@ app.get('/api/user/profile', jwtMiddleware, (req, res) => {
 app.put('/api/user/profile', jwtMiddleware, (req, res) => {
   const userId = req.user.userId; 
   const { name, username, email, phone, address } = req.body; 
+  console.log(req.body)
   const updateUserQuery = 'UPDATE SYS_User SET Name = ?, Username = ?, Email = ?, Phone = ?, Address = ? WHERE UserId = ?';
   connection.query(updateUserQuery, [name, username, email, phone, address, userId], (err, results) => {
       if (err) {
