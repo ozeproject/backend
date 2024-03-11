@@ -147,10 +147,10 @@ app.get('/api/productCount', (req, res) => {
 
 // Create
 app.post('/api/products', (req, res) => {
-  const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath } = req.body;
-  const query = `INSERT INTO Product (ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-  const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath];
+  const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath , gender , Size } = req.body;
+  const query = `INSERT INTO Product (ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, gender, Size) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, gender , Size];
 
   connection.query(query, values, (err, results) => {
     if (err) {
@@ -165,11 +165,11 @@ app.post('/api/products', (req, res) => {
 // Update
 app.put('/api/products/:id', (req, res) => {
   const productId = req.params.id;
-  const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath } = req.body;
+  const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath , gender , Size } = req.body;
   const query = `UPDATE Product 
-                 SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, CategoryId=?, ImagePath=?
+                 SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, CategoryId=?, ImagePath=?, gender=?, Size=?
                  WHERE ProductId=?`;
-  const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, productId];
+  const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, productId, gender , Size ];
 
   connection.query(query, values, (err, results) => {
     if (err) {
@@ -439,7 +439,7 @@ app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
   const size = req.body.size;
   const quantity = req.body.quantity;
 
-  const query = 'INSERT INTO Wishlist (SYS_User_UserID, Product_productId,Size,Quantity) VALUES (?, ?)';
+  const query = 'INSERT INTO Wishlist (SYS_User_UserID, Product_productId,Size,Quantity) VALUES (?, ?, ?, ?)';
   connection.query(query, [userId, productId,size,quantity], (err, results) => {
       if (err) {
           console.error('Error adding product to wishlist:', err);
@@ -486,7 +486,7 @@ app.delete('/api/cart/:id', (req, res) => {
 app.get('/api/wishlist', jwtMiddleware, (req, res) => {
   const userId = req.query.userId; 
   const query = `
-      SELECT w.wishlist_id,p.ProductId, p.ProductName, p.Description, p.Price, p.StockQuantity, p.Color, p.IsTrend, p.IsNew, p.CategoryId, p.ImagePath, p.gender
+      SELECT w.wishlist_id,p.ProductId, p.ProductName, p.Description, p.Price, p.StockQuantity, p.Color, p.IsTrend, p.IsNew, p.CategoryId, p.ImagePath, p.gender , w.Size, w.Quantity
       FROM Wishlist w
       INNER JOIN Product p ON w.Product_productId = p.ProductId
       WHERE w.SYS_User_UserID = ?
@@ -511,7 +511,7 @@ app.post('/api/cart/add', jwtMiddleware, (req, res) => {
   const size = req.body.size;
   const quantity = req.body.quantity;
 
-  const query = 'INSERT INTO Cart (SYS_User_UserID, Product_productId,Size,Quantity) VALUES (?, ?)';
+  const query = 'INSERT INTO Cart (SYS_User_UserID, Product_productId,Size,Quantity) VALUES (?, ?, ?, ?)';
   connection.query(query, [userId, productId,size,quantity], (err, results) => {
       if (err) {
           console.error('Error adding product to cart:', err);
@@ -541,7 +541,9 @@ app.get('/api/cart', jwtMiddleware, (req, res) => {
       p.IsNew,
       p.CategoryId,
       p.ImagePath,
-      p.gender
+      p.gender,
+      c.Size, 
+      c.Quantity
     FROM Cart c
     INNER JOIN Product p ON c.Product_ProductId = p.ProductId
     WHERE c.SYS_User_UserID = ?`;
