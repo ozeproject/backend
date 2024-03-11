@@ -167,7 +167,7 @@ app.put('/api/products/:id', (req, res) => {
   const productId = req.params.id;
   const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath , gender , Size } = req.body;
   const query = `UPDATE Product 
-                 SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, CategoryId=?, ImagePath=?, gender=?, Size=?
+                 SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, CategoryId=?, ImagePath=?, gender=?, Size=? 
                  WHERE ProductId=?`;
   const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, productId, gender , Size ];
 
