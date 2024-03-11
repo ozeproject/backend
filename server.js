@@ -435,9 +435,11 @@ app.get('/api/order/history', jwtMiddleware, (req, res) => {
 app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
   const userId = req.body.userId;
   const productId = req.body.productId; 
+  const size = req.body.size;
+  const quantity = req.body.quantity;
 
-  const query = 'INSERT INTO Wishlist (SYS_User_UserID, Product_productId) VALUES (?, ?)';
-  connection.query(query, [userId, productId], (err, results) => {
+  const query = 'INSERT INTO Wishlist (SYS_User_UserID, Product_productId,Size,Quantity) VALUES (?, ?)';
+  connection.query(query, [userId, productId,size,quantity], (err, results) => {
       if (err) {
           console.error('Error adding product to wishlist:', err);
           res.status(500).json({ error: 'Internal Server Error' });
@@ -505,9 +507,11 @@ app.get('/api/wishlist', jwtMiddleware, (req, res) => {
 app.post('/api/cart/add', jwtMiddleware, (req, res) => {
   const userId = req.body.userId;
   const productId = req.body.productId; // Assuming productId is sent in the request body
+  const size = req.body.size;
+  const quantity = req.body.quantity;
 
-  const query = 'INSERT INTO Cart (SYS_User_UserID, Product_productId) VALUES (?, ?)';
-  connection.query(query, [userId, productId], (err, results) => {
+  const query = 'INSERT INTO Cart (SYS_User_UserID, Product_productId,Size,Quantity) VALUES (?, ?)';
+  connection.query(query, [userId, productId,size,quantity], (err, results) => {
       if (err) {
           console.error('Error adding product to cart:', err);
           res.status(500).json({ error: 'Internal Server Error' });
