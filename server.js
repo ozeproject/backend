@@ -148,8 +148,7 @@ app.get('/api/productCount', (req, res) => {
 // Create
 app.post('/api/products', (req, res) => {
   const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath , gender , Size } = req.body;
-  const query = `INSERT INTO Product (ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, gender, Size) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const query = 'INSERT INTO Product (ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, gender, Size) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
   const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, gender , Size];
 
   connection.query(query, values, (err, results) => {
@@ -166,9 +165,7 @@ app.post('/api/products', (req, res) => {
 app.put('/api/products/:id', (req, res) => {
   const productId = req.params.id;
   const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath , gender , Size } = req.body;
-  const query = `UPDATE Product 
-                 SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, CategoryId=?, ImagePath=?, gender=?, Size=? 
-                 WHERE ProductId=?`;
+  const query = 'UPDATE Product SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, CategoryId=?, ImagePath=?, gender=?, Size=? WHERE ProductId=?';
   const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, productId, gender , Size ];
 
   connection.query(query, values, (err, results) => {
