@@ -101,7 +101,7 @@ app.get('/api/pd/female', (req, res) => {
     }
 
     if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'No products found for male gender' });
+      return res.status(404).json({ error: 'No products found for female gender' });
     }
     res.status(200).json(results);
   });
