@@ -525,7 +525,6 @@ app.get('/api/cart', jwtMiddleware, (req, res) => {
   const query = `
     SELECT 
       c.cart_id,
-      c.quanity,
       c.SYS_User_UserID,
       c.Product_ProductId,
       p.ProductId,
