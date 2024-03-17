@@ -35,7 +35,7 @@ app.get('/api/products', express.json(), async (req, res) => {
   // add filter
   const { sortBy } = req.query;
 
-  let query = 'SELECT * FROM Product WHERE Quantity > 0';
+  let query = 'SELECT * FROM Product WHERE StockQuantity > 0';
 
   if (sortBy === 'price_low_high') {
     query += ' ORDER BY Price ASC';
@@ -78,7 +78,7 @@ app.get('/api/products/:id', express.json(), (req, res) => {
 
 // Get MALE collection with Quantity > 0
 app.get('/api/pd/male', express.json(), (req, res) => {
-  const query = 'SELECT * FROM Product WHERE gender = ? AND Quantity > 0';
+  const query = 'SELECT * FROM Product WHERE gender = ? AND StockQuantity > 0';
 
   connection.query(query, ['Male'], (err, results) => {
     if (err) {
@@ -95,7 +95,7 @@ app.get('/api/pd/male', express.json(), (req, res) => {
 
 // Get FEMALE collection with Quantity > 0
 app.get('/api/pd/female', express.json(), (req, res) => {
-  const query = 'SELECT * FROM Product WHERE gender = ? AND Quantity > 0';
+  const query = 'SELECT * FROM Product WHERE gender = ? AND StockQuantity > 0';
 
   connection.query(query, ['Female'], (err, results) => {
     if (err) {
@@ -112,7 +112,7 @@ app.get('/api/pd/female', express.json(), (req, res) => {
 
 // Get ACCESSORIES collection with Quantity > 0
 app.get('/api/pd/accessories', express.json(), (req, res) => {
-  const query = 'SELECT * FROM Product WHERE categoryId = ? AND Quantity > 0';
+  const query = 'SELECT * FROM Product WHERE categoryId = ? AND StockQuantity > 0';
 
   connection.query(query, [2], (err, results) => {
     if (err) {
