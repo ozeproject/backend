@@ -129,7 +129,7 @@ app.get('/api/pd/accessories', express.json(), (req, res) => {
 
 // Count
 app.get('/api/productCount', express.json(), (req, res) => {
-  const query = 'SELECT COUNT(*) as count FROM Product';
+  const query = 'SELECT COUNT(*) as count FROM Product WHERE StockQuantity > 0';
 
   connection.query(query, (err, results) => {
     if (err) {
