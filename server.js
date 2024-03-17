@@ -428,24 +428,50 @@ app.get('/api/order/history', jwtMiddleware, (req, res) => {
   });
 });
 
-
-//Add Product to Wishlist 
+// Add Product to Wishlist 
 app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
   const userId = req.body.userId;
   const productId = req.body.productId; 
   const size = req.body.size;
   const quantity = req.body.quantity;
 
-  const query = 'INSERT INTO Wishlist (SYS_User_UserID, Product_productId,Size,Quantity) VALUES (?, ?, ?, ?)';
-  connection.query(query, [userId, productId,size,quantity], (err, results) => {
-      if (err) {
-          console.error('Error adding product to wishlist:', err);
+  // Check if the product already exists in the wishlist
+  const checkQuery = 'SELECT * FROM Wishlist WHERE SYS_User_UserID = ? AND Product_productId = ? AND Size = ?';
+  connection.query(checkQuery, [userId, productId, size], (checkErr, checkResults) => {
+      if (checkErr) {
+          console.error('Error checking product in wishlist:', checkErr);
           res.status(500).json({ error: 'Internal Server Error' });
       } else {
-          res.status(200).json({ message: 'Product added to wishlist successfully' });
+          if (checkResults.length > 0) {
+              // Product already exists, update the quantity
+              const existingQuantity = checkResults[0].Quantity;
+              const newQuantity = existingQuantity + quantity;
+
+              const updateQuery = 'UPDATE Wishlist SET Quantity = ? WHERE SYS_User_UserID = ? AND Product_productId = ? AND Size = ?';
+              connection.query(updateQuery, [newQuantity, userId, productId, size], (updateErr, updateResults) => {
+                  if (updateErr) {
+                      console.error('Error updating product quantity in wishlist:', updateErr);
+                      res.status(500).json({ error: 'Internal Server Error' });
+                  } else {
+                      res.status(200).json({ message: 'Product quantity updated in wishlist successfully' });
+                  }
+              });
+          } else {
+              // Product does not exist, add it to the wishlist
+              const insertQuery = 'INSERT INTO Wishlist (SYS_User_UserID, Product_productId, Size, Quantity) VALUES (?, ?, ?, ?)';
+              connection.query(insertQuery, [userId, productId, size, quantity], (insertErr, insertResults) => {
+                  if (insertErr) {
+                      console.error('Error adding product to wishlist:', insertErr);
+                      res.status(500).json({ error: 'Internal Server Error' });
+                  } else {
+                      res.status(200).json({ message: 'Product added to wishlist successfully' });
+                  }
+              });
+          }
       }
   });
 });
+
 
 // Delete wishlist
 app.delete('/api/wishlist/:id', (req, res) => {
@@ -504,18 +530,42 @@ app.get('/api/wishlist', jwtMiddleware, (req, res) => {
 // Add Product to Cart Endpoint
 app.post('/api/cart/add', jwtMiddleware, (req, res) => {
   const userId = req.body.userId;
-  const productId = req.body.productId; // Assuming productId is sent in the request body
+  const productId = req.body.productId;
   const size = req.body.size;
   const quantity = req.body.quantity;
 
-  const query = 'INSERT INTO Cart (SYS_User_UserID, Product_productId,Size,Quantity) VALUES (?, ?, ?, ?)';
-  connection.query(query, [userId, productId,size,quantity], (err, results) => {
-      if (err) {
-          console.error('Error adding product to cart:', err);
-          res.status(500).json({ error: 'Internal Server Error' });
+  // Check if the product already exists in the cart for the user
+  const checkQuery = 'SELECT * FROM Cart WHERE SYS_User_UserID = ? AND Product_productId = ? AND Size = ?';
+  connection.query(checkQuery, [userId, productId, size], (checkErr, checkResults) => {
+    if (checkErr) {
+      console.error('Error checking cart for existing product:', checkErr);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      if (checkResults.length > 0) {
+        // Product already exists in cart, update the quantity
+        const existingCartId = checkResults[0].CartID;
+        const updateQuery = 'UPDATE Cart SET Quantity = Quantity + ? WHERE CartID = ?';
+        connection.query(updateQuery, [quantity, existingCartId], (updateErr, updateResults) => {
+          if (updateErr) {
+            console.error('Error updating quantity in cart:', updateErr);
+            res.status(500).json({ error: 'Internal Server Error' });
+          } else {
+            res.status(200).json({ message: 'Quantity updated in cart successfully' });
+          }
+        });
       } else {
-          res.status(200).json({ message: 'Product added to cart successfully' });
+        // Product does not exist in cart, add it
+        const insertQuery = 'INSERT INTO Cart (SYS_User_UserID, Product_productId, Size, Quantity) VALUES (?, ?, ?, ?)';
+        connection.query(insertQuery, [userId, productId, size, quantity], (insertErr, insertResults) => {
+          if (insertErr) {
+            console.error('Error adding product to cart:', insertErr);
+            res.status(500).json({ error: 'Internal Server Error' });
+          } else {
+            res.status(200).json({ message: 'Product added to cart successfully' });
+          }
+        });
       }
+    }
   });
 });
 
