@@ -415,7 +415,7 @@ app.put('/api/user/profile',  express.json(),jwtMiddleware, (req, res) => {
 app.get('/api/order/history', express.json(), jwtMiddleware, (req, res) => {
   const userId = req.query.userId; 
   const getOrderHistoryQuery = `
-  Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
+  SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
              Product.ProductId, Product.ProductName, Product.Description, Product.Price, Product.Color, Product.ImagePath,
              OrderItems.Quantity, Cart.Size
       FROM Orders
@@ -423,7 +423,7 @@ app.get('/api/order/history', express.json(), jwtMiddleware, (req, res) => {
       INNER JOIN OrderItems ON Orders.OrderID = OrderItems.Order_OrderID
       INNER JOIN Product ON OrderItems.Product_ProductId = Product.ProductId
       INNER JOIN Cart ON Cart.SYS_User_UserID = Orders.SYS_User_UserID
-    WHERE Orders.SYS_User_UserID = ?;`;
+      WHERE Orders.SYS_User_UserID = ?`;
 
   connection.query(getOrderHistoryQuery, [userId], (err, results) => {
     if (err) {
