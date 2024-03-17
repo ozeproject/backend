@@ -497,22 +497,6 @@ app.delete('/api/wishlist/:id', express.json(), (req, res) => {
   });
 });
 
-// Delete cart
-app.delete('/api/cart/:id', express.json(), (req, res) => {
-  const cartId = req.params.id;
-
-  const query = 'DELETE FROM Cart WHERE cart_id=?';
-
-  connection.query(query, [cartId], (err, results) => {
-    if (err) {
-      console.error('Error executing MySQL query: ', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      res.status(200).json({ message: 'Cart deleted successfully' });
-    }
-  });
-});
-
 // Retrieve Wishlist 
 app.get('/api/wishlist', jwtMiddleware, express.json(), (req, res) => {
   const userId = req.query.userId; 
@@ -614,6 +598,38 @@ app.get('/api/cart', jwtMiddleware, express.json(), (req, res) => {
     res.status(200).json(results);
   });
 
+});
+
+// Update Cart Item
+app.put('/api/cart/:cartItemId', jwtMiddleware, express.json(), (req, res) => {
+  const cartItemId = req.params.cartItemId;
+  const { size, quantity } = req.body;
+
+  // Update the cart item in the database using cartItemId with the new quantity and size
+  const updateQuery = 'UPDATE Cart SET Size = ?, Quantity = ? WHERE cart_id = ?';
+  connection.query(updateQuery, [size, quantity, cartItemId], (updateErr, updateResults) => {
+    if (updateErr) {
+      console.error('Error updating cart item:', updateErr);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+    res.status(200).json({ message: 'Cart item updated successfully' });
+  });
+});
+
+// Delete cart
+app.delete('/api/cart/:id', express.json(), (req, res) => {
+  const cartId = req.params.id;
+
+  const query = 'DELETE FROM Cart WHERE cart_id=?';
+
+  connection.query(query, [cartId], (err, results) => {
+    if (err) {
+      console.error('Error executing MySQL query: ', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      res.status(200).json({ message: 'Cart deleted successfully' });
+    }
+  });
 });
 
 /// payment
