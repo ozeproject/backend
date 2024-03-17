@@ -414,8 +414,8 @@ app.put('/api/user/profile',  express.json(),jwtMiddleware, (req, res) => {
 //UserProfile History
 app.get('/api/order/history', express.json(), jwtMiddleware, (req, res) => {
   const userId = req.query.userId; 
-  const getOrderHistoryQuery = 
-  `SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
+  const getOrderHistoryQuery = `
+  SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
           Product.ProductId, Product.ProductName, Product.Description, Product.Price, Product.Color, Product.ImagePath,
           OrderItems.Quantity, Cart.Size
       FROM Orders
