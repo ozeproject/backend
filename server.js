@@ -31,11 +31,11 @@ connection.connect((err) => {
 
 //Products
 // Get route all product
-app.get('/api/products' ,  express.json(), async(req, res) => {
+app.get('/api/products', express.json(), async (req, res) => {
   // add filter
   const { sortBy } = req.query;
 
-  let query = 'SELECT * FROM Product';
+  let query = 'SELECT * FROM Product WHERE Quantity > 0';
 
   if (sortBy === 'price_low_high') {
     query += ' ORDER BY Price ASC';
@@ -46,6 +46,7 @@ app.get('/api/products' ,  express.json(), async(req, res) => {
   } else if (sortBy === 'z-a') {
     query += ' ORDER BY ProductName DESC';
   }
+
   connection.query(query, (err, results) => {
     if (err) {
       console.error('Error executing MySQL query: ', err);
@@ -75,9 +76,9 @@ app.get('/api/products/:id', express.json(), (req, res) => {
   });
 });
 
-// Get MALE collection
+// Get MALE collection with Quantity > 0
 app.get('/api/pd/male', express.json(), (req, res) => {
-  const query = 'SELECT * FROM Product WHERE gender = ?';
+  const query = 'SELECT * FROM Product WHERE gender = ? AND Quantity > 0';
 
   connection.query(query, ['Male'], (err, results) => {
     if (err) {
@@ -86,15 +87,15 @@ app.get('/api/pd/male', express.json(), (req, res) => {
     }
 
     if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'No products found for male gender' });
+      return res.status(404).json({ error: 'No products found for male gender with Quantity > 0' });
     }
     res.status(200).json(results);
   });
 });
 
-// Get FEMALE collection
+// Get FEMALE collection with Quantity > 0
 app.get('/api/pd/female', express.json(), (req, res) => {
-  const query = 'SELECT * FROM Product WHERE gender = ?';
+  const query = 'SELECT * FROM Product WHERE gender = ? AND Quantity > 0';
 
   connection.query(query, ['Female'], (err, results) => {
     if (err) {
@@ -103,15 +104,15 @@ app.get('/api/pd/female', express.json(), (req, res) => {
     }
 
     if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'No products found for female gender' });
+      return res.status(404).json({ error: 'No products found for female gender with Quantity > 0' });
     }
     res.status(200).json(results);
   });
 });
 
-// Get ACCESSORIES collection
+// Get ACCESSORIES collection with Quantity > 0
 app.get('/api/pd/accessories', express.json(), (req, res) => {
-  const query = 'SELECT * FROM Product WHERE categoryId = ?';
+  const query = 'SELECT * FROM Product WHERE categoryId = ? AND Quantity > 0';
 
   connection.query(query, [2], (err, results) => {
     if (err) {
@@ -120,7 +121,7 @@ app.get('/api/pd/accessories', express.json(), (req, res) => {
     }
 
     if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'No products found for the Accessories category' });
+      return res.status(404).json({ error: 'No products found for the Accessories category with Quantity > 0' });
     }
     res.status(200).json(results);
   });
@@ -759,8 +760,12 @@ app.post(
 
       // Handle the event
       switch (event.type) {
-        case "checkout.session.completed":
+        case "checkout.session.completed":   //เมื่อจ่ายเงินสำเร็จ
           await handleCheckoutSessionCompleted(event, res);
+          // do something
+          //
+          //
+
           break;
         default:
           console.log(`Unhandled event type ${event.type}`);
