@@ -277,7 +277,12 @@ app.post('/api/login', express.json(), (req, res) => {
             res.status(500).json({ error: 'Internal Server Error' });
           } else {
             if (passwordResults.length > 0) {
-              const token = jwt.sign({ userId: user.UserId, username: user.Username, role: user.Role }, 'sj3', { expiresIn: '2h' });
+              const token = jwt.sign({      userId: user.UserId,
+                username: user.Username,
+                role: user.Role,
+                Address: user.Address,
+                Email: user.Email,
+                phone: user.Phone, }, 'sj3', { expiresIn: '2h' });
               res.status(200).json({ token });
             } else {
               res.status(401).json({ error: 'Invalid password' });
