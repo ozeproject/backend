@@ -3,16 +3,18 @@ const cors = require('cors');
 const mysql = require('mysql2');
 const jwt = require('jsonwebtoken');
 const jwtMiddleware = require('./jwtMiddleware'); // Import the JWT middleware
-
+const stripe = require("stripe")("sk_test_51OuQpE09vF0kWl46y8sHkO7ZQcOFJ6wOCiDCtJMfrxJlR9Oai3ad5PsXckmAikpGmFJe1tIFqIl7jDmd4lstejyP002qFFcO7q");
+const { v4: uuidv4 } = require("uuid");
 const app = express();
 // const port = 3001;
 
 app.use(cors());
-app.use(express.json());
+// app.use(express.json());
 
 
 const connection = mysql.createConnection({
   host: process.env.DB_HOST || 'localhost',
+  // host: process.env.DB_HOST || '10.4.85.33',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'mysql',
   database: process.env.DB_NAME || 'ozedb',
@@ -29,7 +31,7 @@ connection.connect((err) => {
 
 //Products
 // Get route all product
-app.get('/api/products', async(req, res) => {
+app.get('/api/products' ,  express.json(), async(req, res) => {
   // add filter
   const { sortBy } = req.query;
 
@@ -55,7 +57,7 @@ app.get('/api/products', async(req, res) => {
 });
 
 // Get a single product 
-app.get('/api/products/:id', (req, res) => {
+app.get('/api/products/:id', express.json(), (req, res) => {
   const productId = req.params.id;
   const query = 'SELECT * FROM Product WHERE ProductId = ?';
 
@@ -74,7 +76,7 @@ app.get('/api/products/:id', (req, res) => {
 });
 
 // Get MALE collection
-app.get('/api/pd/male', (req, res) => {
+app.get('/api/pd/male', express.json(), (req, res) => {
   const query = 'SELECT * FROM Product WHERE gender = ?';
 
   connection.query(query, ['Male'], (err, results) => {
@@ -91,7 +93,7 @@ app.get('/api/pd/male', (req, res) => {
 });
 
 // Get FEMALE collection
-app.get('/api/pd/female', (req, res) => {
+app.get('/api/pd/female', express.json(), (req, res) => {
   const query = 'SELECT * FROM Product WHERE gender = ?';
 
   connection.query(query, ['Female'], (err, results) => {
@@ -108,7 +110,7 @@ app.get('/api/pd/female', (req, res) => {
 });
 
 // Get ACCESSORIES collection
-app.get('/api/pd/accessories', (req, res) => {
+app.get('/api/pd/accessories', express.json(), (req, res) => {
   const query = 'SELECT * FROM Product WHERE categoryId = ?';
 
   connection.query(query, [2], (err, results) => {
@@ -125,7 +127,7 @@ app.get('/api/pd/accessories', (req, res) => {
 });
 
 // Count
-app.get('/api/productCount', (req, res) => {
+app.get('/api/productCount', express.json(), (req, res) => {
   const query = 'SELECT COUNT(*) as count FROM Product';
 
   connection.query(query, (err, results) => {
@@ -146,7 +148,7 @@ app.get('/api/productCount', (req, res) => {
 });
 
 // Create
-app.post('/api/products', (req, res) => {
+app.post('/api/products', express.json(), (req, res) => {
   const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath , gender , Size } = req.body;
   const query = 'INSERT INTO Product (ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, gender, Size) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
   const values = [ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath, gender , Size];
@@ -162,7 +164,7 @@ app.post('/api/products', (req, res) => {
 });
 
 // Update
-app.put('/api/products/:id', (req, res) => {
+app.put('/api/products/:id', express.json(), (req, res) => {
   const productId = req.params.id;
   const { ProductName, Description, Price, StockQuantity, Color, IsTrend, IsNew, CategoryId, ImagePath , gender , Size } = req.body;
   const query = 'UPDATE Product SET ProductName=?, Description=?, Price=?, StockQuantity=?, Color=?, IsTrend=?, IsNew=?, CategoryId=?, ImagePath=?, gender=?, Size=? WHERE ProductId=?';
@@ -179,7 +181,7 @@ app.put('/api/products/:id', (req, res) => {
 });
 
 // Delete
-app.delete('/api/products/:id', (req, res) => {
+app.delete('/api/products/:id', express.json(), (req, res) => {
   const productId = req.params.id;
 
   const query = 'DELETE FROM Product WHERE ProductId=?';
@@ -196,7 +198,7 @@ app.delete('/api/products/:id', (req, res) => {
 
 
 // User Signup
-app.post('/api/signup', (req, res) => {
+app.post('/api/signup', express.json(),(req, res) => {
   const { Username, Password, Email, Name, Address, Phone } = req.body;
 
   const usernameQuery = 'SELECT * FROM SYS_User WHERE Username = ?';
@@ -254,7 +256,7 @@ app.post('/api/signup', (req, res) => {
 });
 
 // Login
-app.post('/api/login', (req, res) => {
+app.post('/api/login', express.json(), (req, res) => {
   const { Username, Password } = req.body;
   const checkUsernameQuery = 'SELECT * FROM SYS_User WHERE Username=?';
   const checkUsernameValues = [Username];
@@ -290,7 +292,7 @@ app.post('/api/login', (req, res) => {
 });
 
 // Update user by UserId
-app.put('/api/users/:userId', (req, res) => {
+app.put('/api/users/:userId', express.json(), (req, res) => {
   const userId = req.params.userId;
   const { Username, Password, Email, Name, Address, Phone } = req.body;
 
@@ -313,7 +315,7 @@ app.put('/api/users/:userId', (req, res) => {
 
 
 // Forgot Password
-app.post('/api/forgot-password', (req, res) => {
+app.post('/api/forgot-password', express.json(), (req, res) => {
   const { Email } = req.body;
 
   const resetToken = generateResetToken();
@@ -333,7 +335,7 @@ app.post('/api/forgot-password', (req, res) => {
 });
 
 // Reset Password
-app.post('/api/forgot-password/:userId', (req, res) => {
+app.post('/api/forgot-password/:userId', express.json(), (req, res) => {
   const { userId } = req.params;
   const { newPassword, resetToken } = req.body;
   const checkTokenQuery = 'SELECT * FROM SYS_User WHERE UserId = ? AND ResetToken = ?';
@@ -369,7 +371,7 @@ function generateResetToken() {
 }
 
 // UserProfile get data for Edit
-app.get('/api/user/profile', jwtMiddleware, (req, res) => {
+app.get('/api/user/profile',  express.json(),jwtMiddleware, (req, res) => {
   const userId = req.user.userId; 
   const getUserQuery = 'SELECT * FROM SYS_User WHERE UserId = ?';
   connection.query(getUserQuery, [userId], (err, results) => {
@@ -386,7 +388,7 @@ app.get('/api/user/profile', jwtMiddleware, (req, res) => {
 });
 
 // UserProfile edit 
-app.put('/api/user/profile', jwtMiddleware, (req, res) => {
+app.put('/api/user/profile',  express.json(),jwtMiddleware, (req, res) => {
   const userId = req.user.userId; 
   const { Name, Username, Email, Phone, Address } = req.body; 
   console.log(req.body)
@@ -404,7 +406,7 @@ app.put('/api/user/profile', jwtMiddleware, (req, res) => {
 });
 
 //UserProfile History
-app.get('/api/order/history', jwtMiddleware, (req, res) => {
+app.get('/api/order/history', express.json(), jwtMiddleware, (req, res) => {
   const userId = req.query.userId; 
   const getOrderHistoryQuery = `
       SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
@@ -429,7 +431,7 @@ app.get('/api/order/history', jwtMiddleware, (req, res) => {
 });
 
 // Add Product to Wishlist 
-app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
+app.post('/api/wishlist/add', express.json(), jwtMiddleware, (req, res) => {
   const userId = req.body.userId;
   const productId = req.body.productId; 
   const size = req.body.size;
@@ -474,7 +476,7 @@ app.post('/api/wishlist/add', jwtMiddleware, (req, res) => {
 
 
 // Delete wishlist
-app.delete('/api/wishlist/:id', (req, res) => {
+app.delete('/api/wishlist/:id', express.json(), (req, res) => {
   const wishlistId = req.params.id;
 
   const query = 'DELETE FROM Wishlist WHERE wishlist_id=?';
@@ -490,7 +492,7 @@ app.delete('/api/wishlist/:id', (req, res) => {
 });
 
 // Delete cart
-app.delete('/api/cart/:id', (req, res) => {
+app.delete('/api/cart/:id', express.json(), (req, res) => {
   const cartId = req.params.id;
 
   const query = 'DELETE FROM Cart WHERE cart_id=?';
@@ -506,7 +508,7 @@ app.delete('/api/cart/:id', (req, res) => {
 });
 
 // Retrieve Wishlist 
-app.get('/api/wishlist', jwtMiddleware, (req, res) => {
+app.get('/api/wishlist', jwtMiddleware, express.json(), (req, res) => {
   const userId = req.query.userId; 
   const query = `
       SELECT w.wishlist_id,p.ProductId, p.ProductName, p.Description, p.Price, p.StockQuantity, p.Color, p.IsTrend, p.IsNew, p.CategoryId, p.ImagePath, p.gender , w.Size, w.Quantity
@@ -528,7 +530,7 @@ app.get('/api/wishlist', jwtMiddleware, (req, res) => {
 });
 
 // Add Product to Cart Endpoint
-app.post('/api/cart/add', jwtMiddleware, (req, res) => {
+app.post('/api/cart/add',  jwtMiddleware, express.json(), (req, res) => {
   const userId = req.body.userId;
   const productId = req.body.productId;
   const size = req.body.size;
@@ -570,7 +572,7 @@ app.post('/api/cart/add', jwtMiddleware, (req, res) => {
 });
 
 // Cart
-app.get('/api/cart', jwtMiddleware, (req, res) => {
+app.get('/api/cart', jwtMiddleware, express.json(), (req, res) => {
   const userId = req.query.userId;
   const query = `
     SELECT 
@@ -608,6 +610,341 @@ app.get('/api/cart', jwtMiddleware, (req, res) => {
 
 });
 
+/// payment
+app.post("/api/checkout", express.json(), async (req, res) => {
+  const { userDetail, total_amount, total_quantity, product, isQuickBuy } =
+    req.body;
+  ///isQuickBuy คือซื้อจากหน้าแรก ไม่ใช่กระเป๋า
+  try {
+    const orderShowId = uuidv4();
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "thb",
+            product_data: { name: "เสื้อผ้า" },
+            unit_amount: total_amount * 100,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      /////ถ้าสำเร็จแล้วจะเด้งไป frontend หน้าไหน
+      success_url: `http://cp23sj3.sit.kmutt.ac.th/sj3/payment/success/${orderShowId}`,
+      cancel_url: `http://cp23sj3.sit.kmutt.ac.th/sj3/payment/fail/${orderShowId}`,
+      // http://cp23sj3.sit.kmutt.ac.th/sj3
+    });
+
+    const shipmentId = await createShipment(userDetail);
+    const paymentMethodId = await createPaymentMethod(session.url, isQuickBuy);
+    const ordersId = await createOrder(
+      session.id,
+      paymentMethodId,
+      shipmentId,
+      userDetail,
+      total_amount,
+      orderShowId
+    );
+
+    await Promise.all(product.map((item) => addOrderItem(item, ordersId)));
+
+    res.json({
+      message: "Checkout success.",
+      orders: {
+        session_id: session.id,
+        PaymentMethods_PaymentMethodID: paymentMethodId,
+        SYS_User_UserID: userDetail.user_id,
+        TotalAmount: total_amount,
+        OrderDate: new Date(),
+        address: userDetail.address,
+      },
+      url_link_payment: session.url,
+    });
+  } catch (error) {
+    console.error("Error creating user:", error.message);
+    res.status(400).json({ error: "Error payment" });
+  }
+});
+
+function createShipment(userDetail) {
+  return new Promise((resolve, reject) => {
+    const query =
+      "INSERT INTO Shipment (shipment_date, address, SYS_User_UserID) VALUES (?, ?, ?)";
+    connection.query(
+      query,
+      [new Date(), userDetail.address, userDetail.user_id],
+      (err, results) => {
+        if (err) reject(err);
+        else resolve(results.insertId);
+      }
+    );
+  });
+}
+
+function createPaymentMethod(url, isQuickBuy) {
+  return new Promise((resolve, reject) => {
+    const query =
+      "INSERT INTO PaymentMethods (status, payment_link , is_quick_buy) VALUES (?, ? , ?)";
+    connection.query(query, ["open", url, isQuickBuy], (err, results) => {
+      if (err) reject(err);
+      else resolve(results.insertId);
+    });
+  });
+}
+
+function createOrder(
+  sessionId,
+  paymentMethodId,
+  shipmentId,
+  userDetail,
+  totalAmount,
+  orderShowId
+) {
+  return new Promise((resolve, reject) => {
+    const query =
+      "INSERT INTO Orders (session_id, PaymentMethods_PaymentMethodID, Shipment_shipment_id, SYS_User_UserID, TotalAmount, OrderDate ,orderShowId) VALUES (? ,?, ?, ?, ?, ?, ?)";
+    connection.query(
+      query,
+      [
+        sessionId,
+        paymentMethodId,
+        shipmentId,
+        userDetail.user_id,
+        totalAmount,
+        new Date(),
+        orderShowId,
+      ],
+      (err, results) => {
+        if (err) reject(err);
+        else resolve(results.insertId);
+      }
+    );
+  });
+}
+
+function addOrderItem(item, ordersId) {
+  return new Promise((resolve, reject) => {
+    const query =
+      "INSERT INTO OrderItems (price, Quantity, Order_OrderID, Product_ProductId ) VALUES (?, ?, ?, ? )";
+    connection.query(
+      query,
+      [item.price, item.Quantity, ordersId, item.product_id],
+      (err, results) => {
+        if (err) reject(err);
+        else resolve();
+      }
+    );
+  });
+}
+
+app.post(
+  "/api/webhook",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+
+    try {
+      const event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        "whsec_3t9bNMUDgYWyDVemi9Ck2eODzeTMvlz5"  
+     
+      );
+
+      // Handle the event
+      switch (event.type) {
+        case "checkout.session.completed":
+          await handleCheckoutSessionCompleted(event, res);
+          break;
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    res.send();
+  }
+);
+
+async function handleCheckoutSessionCompleted(event, res) {
+  const paymentSuccessData = event.data.object;
+  const sessionId = paymentSuccessData.id;
+
+  try {
+    const PaymentMethodId = await findPaymentMethodIdFromSessionId(sessionId);
+    const isQuickBuy = await checkIsQuickBuy(PaymentMethodId);
+    console.log("Is Quick Buy:", isQuickBuy);
+
+    if (!isQuickBuy) {
+      await handleRegularCheckout(sessionId, res);
+    } else {
+      await handleQuickCheckout(sessionId, res);
+    }
+  } catch (err) {
+    console.error("Error updating PaymentMethods:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+async function handleRegularCheckout(sessionId, res) {
+  try {
+    const orderId = await findOrderIdFromSessionId(sessionId);
+    const orderItems = await findOrderItemsByOrderId(orderId);
+
+    for (const orderItem of orderItems) {
+      const productId = orderItem.Product_ProductId;
+      const quantity = orderItem.Quantity;
+      await updateProductStockQuantity(productId, quantity);
+      console.log(
+        `ลบ StockQuantity ของ Product ID ${productId} จำนวน ${quantity} สำเร็จ`
+      );
+    }
+
+    const userId = await findUserIdFromSessionId(sessionId);
+    await deleteCartItemsByUserId(userId);
+    console.log("ลบรายการในตะกร้าสำเร็จ");
+
+    const PaymentMethod = await findPaymentMethod(sessionId);
+    await updatePaymentStatus(PaymentMethod);
+    console.log("อัพเดทเข้า database สำเร็จ");
+
+    res.send();
+  } catch (err) {
+    console.error("Error handling regular checkout:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+async function handleQuickCheckout(sessionId, res) {
+  try {
+    const orderId = await findOrderIdFromSessionId(sessionId);
+    const orderItems = await findOrderItemsByOrderId(orderId);
+
+    for (const orderItem of orderItems) {
+      const productId = orderItem.Product_ProductId;
+      const quantity = orderItem.Quantity;
+      await updateProductStockQuantity(productId, quantity);
+      console.log(
+        `ลบ StockQuantity ของ Product ID ${productId} จำนวน ${quantity} สำเร็จ`
+      );
+    }
+
+    const PaymentMethod = await findPaymentMethod(sessionId);
+    await updatePaymentStatus(PaymentMethod);
+    console.log("อัพเดทเข้า database สำเร็จ");
+
+    res.send();
+  } catch (err) {
+    console.error("Error handling quick checkout:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+function findOrderItemsByOrderId(orderId) {
+  return new Promise((resolve, reject) => {
+    const findOrderItemsQuery =
+      "SELECT Product_ProductId, Quantity FROM OrderItems WHERE Order_OrderID = ?;";
+    connection.query(findOrderItemsQuery, [orderId], (err, results) => {
+      if (err) reject(err);
+      else resolve(results);
+    });
+  });
+}
+function updateProductStockQuantity(productId, quantity) {
+  return new Promise((resolve, reject) => {
+    const updateStockQuery =
+      "UPDATE Product SET StockQuantity = StockQuantity - ? WHERE ProductId = ?;";
+    connection.query(
+      updateStockQuery,
+      [quantity, productId],
+      (err, results) => {
+        if (err) reject(err);
+        else resolve();
+      }
+    );
+  });
+}
+
+function findPaymentMethodIdFromSessionId(sessionId) {
+  return new Promise((resolve, reject) => {
+    const findPaymentMethodIdQuery =
+      "SELECT PaymentMethods_PaymentMethodID FROM Orders WHERE session_id = ?;";
+    connection.query(findPaymentMethodIdQuery, [sessionId], (err, results) => {
+      if (err) reject(err);
+      else resolve(results[0].PaymentMethods_PaymentMethodID);
+    });
+  });
+}
+
+function checkIsQuickBuy(paymentMethodId) {
+  return new Promise((resolve, reject) => {
+    const findIsQuickBuyQuery =
+      "SELECT is_quick_buy FROM PaymentMethods WHERE PaymentMethodID = ?;";
+    connection.query(findIsQuickBuyQuery, [paymentMethodId], (err, results) => {
+      if (err) reject(err);
+      else resolve(results[0].is_quick_buy);
+    });
+  });
+}
+
+function findUserIdFromSessionId(sessionId) {
+  return new Promise((resolve, reject) => {
+    const findUserIdQuery =
+      "SELECT SYS_User_UserID FROM Orders WHERE session_id = ?;";
+    connection.query(findUserIdQuery, [sessionId], (err, results) => {
+      if (err) reject(err);
+      else resolve(results[0].SYS_User_UserID);
+    });
+  });
+}
+function deleteCartItemsByUserId(userId) {
+  return new Promise((resolve, reject) => {
+    const deleteCartItemsQuery = "DELETE FROM Cart WHERE SYS_User_UserID = ?;";
+    connection.query(deleteCartItemsQuery, [userId], (err, results) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+function findPaymentMethod(sessionId) {
+  return new Promise((resolve, reject) => {
+    const findId =
+      "SELECT PaymentMethods_PaymentMethodID FROM Orders WHERE session_id = ?;";
+    connection.query(findId, [sessionId], (err, results) => {
+      if (err) reject(err);
+      else resolve(results[0].PaymentMethods_PaymentMethodID);
+    });
+  });
+}
+
+function updatePaymentStatus(paymentMethodId) {
+  console.log(paymentMethodId);
+  return new Promise((resolve, reject) => {
+    const updateStatus =
+      "UPDATE PaymentMethods SET status = ? WHERE PaymentMethodID = ?";
+    connection.query(
+      updateStatus,
+      ["success", paymentMethodId],
+      (err, results) => {
+        if (err) reject(err);
+        else resolve();
+      }
+    );
+  });
+}
+
+function findOrderIdFromSessionId(sessionId) {
+  return new Promise((resolve, reject) => {
+    const findOrderIdQuery = "SELECT OrderID FROM Orders WHERE session_id = ?;";
+    connection.query(findOrderIdQuery, [sessionId], (err, results) => {
+      if (err) reject(err);
+      else resolve(results[0].OrderID);
+    });
+  });
+}
 const port = 8080;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
