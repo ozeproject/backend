@@ -422,7 +422,6 @@ app.get('/api/order/history', express.json(), jwtMiddleware, (req, res) => {
       INNER JOIN PaymentMethods on PaymentMethods.PaymentMethodID = Orders.PaymentMethods_PaymentMethodID
       INNER JOIN OrderItems ON Orders.OrderID = OrderItems.Order_OrderID
       INNER JOIN Product ON OrderItems.Product_ProductId = Product.ProductId
-      INNER JOIN Cart ON Cart.SYS_User_UserID = Orders.SYS_User_UserID
       WHERE Orders.SYS_User_UserID = ?`;
 
   connection.query(getOrderHistoryQuery, [userId], (err, results) => {
