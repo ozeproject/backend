@@ -722,7 +722,8 @@ function createOrder(
   shipmentId,
   userDetail,
   totalAmount,
-  orderShowId
+  orderShowId,
+  size
 ) {
   return new Promise((resolve, reject) => {
     const query =
@@ -737,6 +738,7 @@ function createOrder(
         totalAmount,
         new Date(),
         orderShowId,
+        size
       ],
       (err, results) => {
         if (err) reject(err);
