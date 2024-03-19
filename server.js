@@ -340,37 +340,49 @@ app.post('/api/forgot-password', express.json(), (req, res) => {
   });
 });
 
-// Reset Password
-app.post('/api/forgot-password/:userId', express.json(), (req, res) => {
-  const { userId } = req.params;
-  const { newPassword, resetToken } = req.body;
-  const checkTokenQuery = 'SELECT * FROM SYS_User WHERE UserId = ? AND ResetToken = ?';
-  connection.query(checkTokenQuery, [userId, resetToken], (tokenErr, tokenResults) => {
-    if (tokenErr) {
-      console.error('Error checking reset token: ', tokenErr);
+// Check if email exists in the database
+app.post('/api/resetpassword/checkemail', (req, res) => {
+  const { email } = req.body;
+
+  // Query to check if the email exists in the database
+  const query = 'SELECT * FROM SYS_User WHERE Email = ?';
+  connection.query(query, [email], (error, results) => {
+    if (error) {
+      console.error('Error checking email:', error);
       res.status(500).json({ error: 'Internal Server Error' });
-    } else if (tokenResults.length === 0) {
-      res.status(401).json({ error: 'Invalid reset token' });
     } else {
-      const updatePasswordQuery = 'UPDATE SYS_User SET Password = ? WHERE UserId = ?';
-      connection.query(updatePasswordQuery, [newPassword, userId], (updateErr, updateResults) => {
-        if (updateErr) {
-          console.error('Error updating password: ', updateErr);
-          res.status(500).json({ error: 'Internal Server Error' });
-        } else {
-          const clearTokenQuery = 'UPDATE SYS_User SET ResetToken = NULL WHERE UserId = ?';
-          connection.query(clearTokenQuery, [userId], (clearTokenErr, clearTokenResults) => {
-            if (clearTokenErr) {
-              console.error('Error clearing reset token: ', clearTokenErr);
-            }
-            res.status(200).json({ message: 'Password reset successfully' });
-          });
-        }
-      });
+      if (results.length > 0) {
+        // Email exists, proceed to the next step
+        res.status(200).json({ message: 'Email found in the system' });
+      } else {
+        // Email doesn't exist, return an error response
+        res.status(404).json({ error: "Email not found in the system" });
+      }
     }
   });
 });
 
+// Reset password for the user
+app.post('/api/resetpassword', (req, res) => {
+  const { email, newPassword, confirmPassword } = req.body;
+
+  // Verify that newPassword matches confirmPassword
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ error: "Passwords do not match" });
+  }
+
+  // Update the password in the database
+  const updateQuery = 'UPDATE SYS_User SET Password = ? WHERE Email = ?';
+  connection.query(updateQuery, [newPassword, email], (error, results) => {
+    if (error) {
+      console.error('Error updating password:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      // Password updated successfully
+      res.status(200).json({ message: 'Password reset successful' });
+    }
+  });
+});
 // Helper function to generate a random reset token
 function generateResetToken() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
