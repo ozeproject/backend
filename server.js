@@ -666,8 +666,8 @@ app.post("/api/checkout", express.json(), async (req, res) => {
       ],
       mode: "payment",
       /////ถ้าสำเร็จแล้วจะเด้งไป frontend หน้าไหน
-      success_url: `http://cp23sj3.sit.kmutt.ac.th/payment/success/${orderShowId}`,
-      cancel_url: `http://cp23sj3.sit.kmutt.ac.th/payment/fail/${orderShowId}`,
+      success_url: `http://cp23sj3.sit.kmutt.ac.th/sj3/payment/success/${orderShowId}`,
+      cancel_url: `http://cp23sj3.sit.kmutt.ac.th/sj3/payment/fail/${orderShowId}`,
       // http://cp23sj3.sit.kmutt.ac.th/sj3
     });
 
