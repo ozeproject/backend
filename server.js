@@ -735,11 +735,10 @@ function createOrder(
   userDetail,
   totalAmount,
   orderShowId,
-  size
 ) {
   return new Promise((resolve, reject) => {
     const query =
-      "INSERT INTO Orders (session_id, PaymentMethods_PaymentMethodID, Shipment_shipment_id, SYS_User_UserID, TotalAmount, OrderDate ,orderShowId, Size) VALUES (? ,?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO Orders (session_id, PaymentMethods_PaymentMethodID, Shipment_shipment_id, SYS_User_UserID, TotalAmount, OrderDate ,orderShowId) VALUES (? ,?, ?, ?, ?, ?, ?)";
     connection.query(
       query,
       [
@@ -750,7 +749,6 @@ function createOrder(
         totalAmount,
         new Date(),
         orderShowId,
-        size
       ],
       (err, results) => {
         if (err) reject(err);
