@@ -636,7 +636,7 @@ app.delete('/api/cart/:id', express.json(), (req, res) => {
 
 /// payment
 app.post("/api/checkout", express.json(), async (req, res) => {
-  const { userDetail, total_amount, total_quantity, product, isQuickBuy } =
+  const { userDetail, total_amount, total_quantity, product, isQuickBuy , size } =
     req.body;
   ///isQuickBuy คือซื้อจากหน้าแรก ไม่ใช่กระเป๋า
   try {
@@ -671,7 +671,7 @@ app.post("/api/checkout", express.json(), async (req, res) => {
       orderShowId
     );
 
-    await Promise.all(product.map((item) => addOrderItem(item, ordersId)));
+    await Promise.all(product.map((item) => addOrderItem(item, ordersId, size)));
 
     res.json({
       message: "Checkout success.",
@@ -749,13 +749,13 @@ function createOrder(
   });
 }
 
-function addOrderItem(item, ordersId) {
+function addOrderItem(item, ordersId, size) {
   return new Promise((resolve, reject) => {
     const query =
-      "INSERT INTO OrderItems (price, Quantity, Order_OrderID, Product_ProductId ) VALUES (?, ?, ?, ? )";
+      "INSERT INTO OrderItems (price, Quantity, Order_OrderID, Product_ProductId, Size) VALUES (?, ?, ?, ?, ?)";
     connection.query(
       query,
-      [item.price, item.Quantity, ordersId, item.product_id],
+      [item.price, item.Quantity, ordersId, item.product_id, size],
       (err, results) => {
         if (err) reject(err);
         else resolve();
