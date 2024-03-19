@@ -429,12 +429,11 @@ app.get('/api/order/history', express.json(), jwtMiddleware, (req, res) => {
   const getOrderHistoryQuery = `
   SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
           Product.ProductId, Product.ProductName, Product.Description, Product.Price, Product.Color, Product.ImagePath,
-          OrderItems.Quantity , Cart.Size
+          OrderItems.Quantity , OrderItems.Size
       FROM Orders
       INNER JOIN PaymentMethods on PaymentMethods.PaymentMethodID = Orders.PaymentMethods_PaymentMethodID
       INNER JOIN OrderItems ON Orders.OrderID = OrderItems.Order_OrderID
       INNER JOIN Product ON OrderItems.Product_ProductId = Product.ProductId
-      LEFT JOIN Cart ON Cart.Product_ProductId = Product.ProductId AND Cart.SYS_User_UserID = Orders.SYS_User_UserID
       WHERE Orders.SYS_User_UserID = ?`;
 
   connection.query(getOrderHistoryQuery, [userId], (err, results) => {
