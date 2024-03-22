@@ -319,29 +319,8 @@ app.put('/api/users/:userId', express.json(), (req, res) => {
   });
 });
 
-
-// Forgot Password
-app.post('/api/forgot-password', express.json(), (req, res) => {
-  const { Email } = req.body;
-
-  const resetToken = generateResetToken();
-
-  const updateQuery = 'UPDATE SYS_User SET ResetToken = ? WHERE Email = ?';
-  connection.query(updateQuery, [resetToken, Email], (updateErr, updateResults) => {
-    if (updateErr) {
-      console.error('Error updating reset token: ', updateErr);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      console.log('Update Query:', updateQuery);
-      console.log('Update Parameters:', [resetToken, Email]);
-      console.log('Update Results:', updateResults)
-      res.status(200).json({ message: 'Password reset initiated', resetToken });
-    }
-  });
-});
-
 // Check if email exists in the database
-app.post('/api/resetpassword/checkemail', (req, res) => {
+app.post('/api/checkemail', (req, res) => {
   const { email } = req.body;
 
   // Query to check if the email exists in the database
