@@ -320,10 +320,9 @@ app.put('/api/users/:userId', express.json(), (req, res) => {
 });
 
 // Check if email exists in the database
-app.post('/api/checkemail', (req, res) => {
+app.post('/api/checkemail', express.json(), (req, res) => {
   const { email } = req.body;
 
-  // Query to check if the email exists in the database
   const query = 'SELECT * FROM SYS_User WHERE Email = ?';
   connection.query(query, [email], (error, results) => {
     if (error) {
@@ -331,10 +330,8 @@ app.post('/api/checkemail', (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     } else {
       if (results.length > 0) {
-        // Email exists, proceed to the next step
         res.status(200).json({ message: 'Email found in the system' });
       } else {
-        // Email doesn't exist, return an error response
         res.status(404).json({ error: "Email not found in the system" });
       }
     }
@@ -342,27 +339,24 @@ app.post('/api/checkemail', (req, res) => {
 });
 
 // Reset password for the user
-app.post('/api/resetpassword', (req, res) => {
+app.post('/api/resetpassword', express.json(), (req, res) => {
   const { email, newPassword, confirmPassword } = req.body;
 
-  // Verify that newPassword matches confirmPassword
   if (newPassword !== confirmPassword) {
     return res.status(400).json({ error: "Passwords do not match" });
   }
 
-  // Update the password in the database
   const updateQuery = 'UPDATE SYS_User SET Password = ? WHERE Email = ?';
   connection.query(updateQuery, [newPassword, email], (error, results) => {
     if (error) {
       console.error('Error updating password:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     } else {
-      // Password updated successfully
       res.status(200).json({ message: 'Password reset successful' });
     }
   });
 });
-// Helper function to generate a random reset token
+
 function generateResetToken() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
