@@ -263,20 +263,24 @@ app.post('/api/login', express.json(), (req, res) => {
   const checkUsernameValues = [Username];
 
   connection.query(checkUsernameQuery, checkUsernameValues, (err, usernameResults) => {
+    //ตรวจสอบว่ามีข้อผิดพลาดเกิดขึ้นในการทำคำสั่ง SQL หรือไม่
     if (err) {
       console.error('Error executing MySQL query: ', err);
       res.status(500).json({ error: 'Internal Server Error' });
     } else {
+      //เช็คว่ามีผู้ใช้อยู่ในระบบหรือไม่
       if (usernameResults.length > 0) {
         const user = usernameResults[0];
         const checkPasswordQuery = 'SELECT * FROM SYS_User WHERE UserId=? AND Password=?';
         const checkPasswordValues = [user.UserId, Password];
 
         connection.query(checkPasswordQuery, checkPasswordValues, (passwordErr, passwordResults) => {
+            //ตรวจสอบว่ามีข้อผิดพลาดเกิดขึ้นในการทำคำสั่ง SQL หรือไม่
           if (passwordErr) {
             console.error('Error executing MySQL query: ', passwordErr);
             res.status(500).json({ error: 'Internal Server Error' });
           } else {
+          //ตรวจสอบว่า พาสเวิสถูกต้องหรือไม่
             if (passwordResults.length > 0) {
               const token = jwt.sign({      userId: user.UserId,
                 username: user.Username,
