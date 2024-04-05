@@ -6,6 +6,8 @@ const jwtMiddleware = require('./jwtMiddleware'); // Import the JWT middleware
 const stripe = require("stripe")("sk_test_51OuQpE09vF0kWl46y8sHkO7ZQcOFJ6wOCiDCtJMfrxJlR9Oai3ad5PsXckmAikpGmFJe1tIFqIl7jDmd4lstejyP002qFFcO7q");
 const { v4: uuidv4 } = require("uuid");
 const app = express();
+const bcrypt = require('bcryptjs')
+// import bcrypt from 'bcryptjs';
 // const port = 3001;
 
 app.use(cors());
@@ -13,8 +15,8 @@ app.use(cors());
 
 
 const connection = mysql.createConnection({
-  host: process.env.DB_HOST || 'localhost',
-  // host: process.env.DB_HOST || '10.4.85.33',
+  // host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || '10.4.85.33',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'mysql',
   database: process.env.DB_NAME || 'ozedb',
@@ -32,6 +34,13 @@ connection.connect((err) => {
 //Products
 // Get route all product
 app.get('/api/products', express.json(), async (req, res) => {
+
+// bcrypt.compare('Hello', hashPass, (err, res) => {
+//   console.log(res);
+//  });
+
+// console.log(hashPass == hashPass02);
+
   // add filter
   const { sortBy } = req.query;
 
@@ -199,7 +208,7 @@ app.delete('/api/products/:id', express.json(), (req, res) => {
 
 
 // User Signup
-app.post('/api/signup', express.json(),(req, res) => {
+app.post('/api/signup', express.json(), async (req, res) => {
   const { Username, Password, Email, Name, Address, Phone } = req.body;
 
   const usernameQuery = 'SELECT * FROM SYS_User WHERE Username = ?';
@@ -216,7 +225,7 @@ app.post('/api/signup', express.json(),(req, res) => {
     }
 
     const emailQuery = 'SELECT * FROM SYS_User WHERE Email = ?';
-    connection.query(emailQuery, [Email], (emailErr, emailResults) => {
+    connection.query(emailQuery, [Email], async (emailErr, emailResults) => {
       if (emailErr) {
         console.error('Error checking email:', emailErr);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -240,9 +249,10 @@ app.post('/api/signup', express.json(),(req, res) => {
         res.status(400).json({ error: 'Passwords do not match' });
         return;
       }
+      const hashPass = await bcrypt.hash(Password,10);
 
       const insertQuery = 'INSERT INTO SYS_User (Username, Password, Email, Name, Address, Phone) VALUES (?, ?, ?, ?, ?, ?)';
-      const insertValues = [Username, Password, Email, Name, Address, Phone];
+      const insertValues = [Username, hashPass, Email, Name, Address, Phone];
 
       connection.query(insertQuery, insertValues, (insertErr, insertResults) => {
         if (insertErr) {
@@ -262,7 +272,7 @@ app.post('/api/login', express.json(), (req, res) => {
   const checkUsernameQuery = 'SELECT * FROM SYS_User WHERE Username=?';
   const checkUsernameValues = [Username];
 
-  connection.query(checkUsernameQuery, checkUsernameValues, (err, usernameResults) => {
+  connection.query(checkUsernameQuery, checkUsernameValues, async (err, usernameResults) => {
     //ตรวจสอบว่ามีข้อผิดพลาดเกิดขึ้นในการทำคำสั่ง SQL หรือไม่
     if (err) {
       console.error('Error executing MySQL query: ', err);
@@ -271,17 +281,12 @@ app.post('/api/login', express.json(), (req, res) => {
       //เช็คว่ามีผู้ใช้อยู่ในระบบหรือไม่
       if (usernameResults.length > 0) {
         const user = usernameResults[0];
-        const checkPasswordQuery = 'SELECT * FROM SYS_User WHERE UserId=? AND Password=?';
-        const checkPasswordValues = [user.UserId, Password];
-
-        connection.query(checkPasswordQuery, checkPasswordValues, (passwordErr, passwordResults) => {
-            //ตรวจสอบว่ามีข้อผิดพลาดเกิดขึ้นในการทำคำสั่ง SQL หรือไม่
-          if (passwordErr) {
-            console.error('Error executing MySQL query: ', passwordErr);
-            res.status(500).json({ error: 'Internal Server Error' });
-          } else {
+        // const checkPasswordQuery = 'SELECT * FROM SYS_User WHERE UserId=? AND Password=?';
+        const hashPass = await bcrypt.hash(Password,10);
+        const checkPassStatus =  bcrypt.compare(user.Password, hashPass)
+        // const checkPasswordValues = [user.UserId, Password];
           //ตรวจสอบว่า พาสเวิสถูกต้องหรือไม่
-            if (passwordResults.length > 0) {
+            if (checkPassStatus) {
               const token = jwt.sign({      userId: user.UserId,
                 username: user.Username,
                 role: user.Role,
@@ -292,8 +297,6 @@ app.post('/api/login', express.json(), (req, res) => {
             } else {
               res.status(401).json({ error: 'Invalid password' });
             }
-          }
-        });
       } else {
         res.status(401).json({ error: 'User not found' });
       }
@@ -343,15 +346,17 @@ app.post('/api/checkemail', express.json(), (req, res) => {
 });
 
 // Reset password for the user
-app.post('/api/resetpassword', express.json(), (req, res) => {
+app.post('/api/resetpassword', express.json(), async (req, res) => {
   const { email, newPassword, confirmPassword } = req.body;
 
   if (newPassword !== confirmPassword) {
     return res.status(400).json({ error: "Passwords do not match" });
   }
 
+  const newPassHash = await bcrypt.hash(newPassword,10);
+
   const updateQuery = 'UPDATE SYS_User SET Password = ? WHERE Email = ?';
-  connection.query(updateQuery, [newPassword, email], (error, results) => {
+  connection.query(updateQuery, [newPassHash, email], (error, results) => {
     if (error) {
       console.error('Error updating password:', error);
       res.status(500).json({ error: 'Internal Server Error' });
