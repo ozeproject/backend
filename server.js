@@ -405,28 +405,41 @@ app.put('/api/user/profile',  express.json(),jwtMiddleware, (req, res) => {
   });
 });
 
-//UserProfile History
+//OrderHistories
 app.get('/api/order/history', express.json(), jwtMiddleware, (req, res) => {
-  const userId = req.query.userId; 
+  const userId = req.query.userId;
+
   const getOrderHistoryQuery = `
-  SELECT Orders.OrderID, Orders.OrderDate, Orders.TotalAmount, 
-          Product.ProductId, Product.ProductName, Product.Description, Product.Price, Product.Color, Product.ImagePath,
-          OrderItems.Quantity , OrderItems.Size, PaymentMethods.status
-      FROM Orders
-      INNER JOIN PaymentMethods on PaymentMethods.PaymentMethodID = Orders.PaymentMethods_PaymentMethodID
-      INNER JOIN OrderItems ON Orders.OrderID = OrderItems.Order_OrderID
-      INNER JOIN Product ON OrderItems.Product_ProductId = Product.ProductId
-      WHERE Orders.SYS_User_UserID = ?`;
+    SELECT 
+      Orders.OrderID,
+      Orders.OrderDate,
+      Orders.TotalAmount,
+      Product.ProductId,
+      Product.ProductName,
+      Product.Description,
+      Product.Price,
+      Product.Color,
+      Product.ImagePath,
+      OrderItems.Quantity,
+      OrderItems.Size,
+      PaymentMethods.status
+    FROM Orders
+    INNER JOIN PaymentMethods ON PaymentMethods.PaymentMethodID = Orders.PaymentMethods_PaymentMethodID
+    INNER JOIN OrderItems ON Orders.OrderID = OrderItems.Order_OrderID
+    INNER JOIN Product ON OrderItems.Product_ProductId = Product.ProductId
+    WHERE Orders.SYS_User_UserID = ?
+  `;
 
   connection.query(getOrderHistoryQuery, [userId], (err, results) => {
     if (err) {
-      console.error('Error executing MySQL query: ', err);
+      console.error('Error executing MySQL query:', err);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
-  
+
     if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'No products found History' });
+      return res.status(404).json({ error: 'No order history found for this user' });
     }
+
     res.status(200).json(results);
   });
 });
