@@ -267,42 +267,51 @@ app.post('/api/signup', express.json(), async (req, res) => {
 });
 
 // Login
-app.post('/api/login', express.json(), (req, res) => {
+app.post('/api/login', express.json(), async (req, res) => {
   const { Username, Password } = req.body;
   const checkUsernameQuery = 'SELECT * FROM SYS_User WHERE Username=?';
   const checkUsernameValues = [Username];
 
   connection.query(checkUsernameQuery, checkUsernameValues, async (err, usernameResults) => {
-    //ตรวจสอบว่ามีข้อผิดพลาดเกิดขึ้นในการทำคำสั่ง SQL หรือไม่
+    // Check if there's an error executing the SQL query
     if (err) {
       console.error('Error executing MySQL query: ', err);
       res.status(500).json({ error: 'Internal Server Error' });
     } else {
-      //เช็คว่ามีผู้ใช้อยู่ในระบบหรือไม่
+      // Check if the user exists
       if (usernameResults.length > 0) {
         const user = usernameResults[0];
-        // const checkPasswordQuery = 'SELECT * FROM SYS_User WHERE UserId=? AND Password=?';
-        const hashPass = await bcrypt.hash(Password,10);
-        const checkPassStatus =  bcrypt.compare(user.Password, hashPass)
-        // const checkPasswordValues = [user.UserId, Password];
-          //ตรวจสอบว่า พาสเวิสถูกต้องหรือไม่
-            if (checkPassStatus) {
-              const token = jwt.sign({      userId: user.UserId,
-                username: user.Username,
-                role: user.Role,
-                Address: user.Address,
-                Email: user.Email,
-                phone: user.Phone, }, 'sj3', { expiresIn: '2h' });
-              res.status(200).json({ token });
-            } else {
-              res.status(401).json({ error: 'Invalid password' });
-            }
+        try {
+          // Hash the input password for comparison
+          const hashPass = await bcrypt.hash(Password, 10);
+          // Compare the hashed input password with the hashed password from the database
+          const checkPassStatus = await bcrypt.compare(Password, user.Password);
+          // Check if the password is correct
+          if (checkPassStatus) {
+            // Generate JWT token if password is correct
+            const token = jwt.sign({      
+              userId: user.UserId,
+              username: user.Username,
+              role: user.Role,
+              Address: user.Address,
+              Email: user.Email,
+              phone: user.Phone,
+            }, 'sj3', { expiresIn: '2h' });
+            res.status(200).json({ token });
+          } else {
+            res.status(401).json({ error: 'Invalid password' });
+          }
+        } catch (error) {
+          console.error('Error comparing passwords: ', error);
+          res.status(500).json({ error: 'Internal Server Error' });
+        }
       } else {
         res.status(401).json({ error: 'User not found' });
       }
     }
   });
 });
+
 
 // Update user by UserId
 app.put('/api/users/:userId', express.json(), (req, res) => {
