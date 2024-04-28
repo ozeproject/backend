@@ -553,7 +553,7 @@ app.post('/api/cart/add',  jwtMiddleware, express.json(), (req, res) => {
       if (checkResults.length > 0) {
         // Product already exists in cart, update the quantity
         const existingCartId = checkResults[0].CartID;
-        const updateQuery = 'UPDATE Cart SET Quantity = Quantity + ? WHERE CartID = ?';
+        const updateQuery = 'UPDATE Cart SET Quantity = Quantity + ? WHERE ProductID = ?';
         connection.query(updateQuery, [quantity, existingCartId], (updateErr, updateResults) => {
           if (updateErr) {
             console.error('Error updating quantity in cart:', updateErr);
